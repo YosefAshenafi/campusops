@@ -1,4 +1,4 @@
-.PHONY: up down logs restart build shell-php shell-mysql migrate seed install setup layui auto-cancel
+.PHONY: up down logs restart build shell-php shell-mysql db-fresh migrate seed install setup layui auto-cancel
 
 # ===== Docker =====
 
@@ -22,8 +22,15 @@ build:
 shell-php:
 	docker compose exec php bash
 
+# Root password is whatever initialized the mysql_data volume (often root_secret if no .env yet).
 shell-mysql:
 	docker compose exec mysql mysql -u root -proot_secret campusops
+
+# Drop MySQL volume and recreate containers. Use when DB_* in .env changed after first boot.
+db-fresh:
+	docker compose down -v
+	docker compose up -d
+	@echo "When mysql is healthy: make migrate (and make install if vendor is empty)."
 
 # ===== Backend =====
 

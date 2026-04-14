@@ -1,5 +1,17 @@
 <?php
 
+// Prefer real environment (e.g. Docker Compose) over backend/.env. ThinkPHP's
+// env() merges .env into Env first, which otherwise overrides container DB_* and
+// breaks when .env placeholders differ from MYSQL_PASSWORD used at DB init.
+$dbEnv = static function (string $key, $default = null) {
+    $v = getenv($key);
+    if ($v !== false) {
+        return $v;
+    }
+
+    return env($key, $default);
+};
+
 return [
     // Default database connection
     'default' => 'mysql',
@@ -8,11 +20,11 @@ return [
     'connections' => [
         'mysql' => [
             'type'     => 'mysql',
-            'hostname' => env('DB_HOST', '127.0.0.1'),
-            'database' => env('DB_DATABASE', 'campusops'),
-            'username' => env('DB_USERNAME', 'campusops'),
-            'password' => env('DB_PASSWORD', ''),
-            'hostport' => env('DB_PORT', '3306'),
+            'hostname' => $dbEnv('DB_HOST', '127.0.0.1'),
+            'database' => $dbEnv('DB_DATABASE', 'campusops'),
+            'username' => $dbEnv('DB_USERNAME', 'campusops'),
+            'password' => $dbEnv('DB_PASSWORD', ''),
+            'hostport' => $dbEnv('DB_PORT', '3306'),
             'charset'  => 'utf8mb4',
             'collation' => 'utf8mb4_unicode_ci',
             'prefix'   => '',
