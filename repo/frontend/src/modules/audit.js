@@ -7,6 +7,11 @@ layui.define(['jquery', 'common'], function (exports) {
     var common = layui.common;
 
     var audit = {
+        initList: function () {
+            this.load(1);
+            this.bindEvents();
+        },
+
         load: function (page) {
             page = page || 1;
             var params = {

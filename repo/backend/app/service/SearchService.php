@@ -56,9 +56,9 @@ class SearchService
             }
         }
 
-        // Filter by engagement proxy: view_count >= reply_count_min
+        // Filter by minimum reply count
         if ($replyCountMin > 0) {
-            $queryBuilder->where('view_count', '>=', $replyCountMin);
+            $queryBuilder->where('reply_count', '>=', $replyCountMin);
         }
 
         // Apply sorting
@@ -70,8 +70,7 @@ class SearchService
                 $queryBuilder->order('view_count', 'desc');
                 break;
             case 'reply_count':
-                // reply_count sort uses view_count as engagement proxy (no separate reply table)
-                $queryBuilder->order('view_count', 'desc');
+                $queryBuilder->order('reply_count', 'desc');
                 break;
             case 'relevance':
             default:
@@ -213,9 +212,9 @@ class SearchService
     }
 
     /**
-     * Index an entity with pinyin.
+     * Index an entity with pinyin, author, and engagement metrics.
      */
-    public function index(string $entityType, int $entityId, string $title, string $body, array $tags = []): void
+    public function index(string $entityType, int $entityId, string $title, string $body, array $tags = [], string $author = '', int $viewCount = 0, int $replyCount = 0): void
     {
         $existing = SearchIndex::where('entity_type', $entityType)
             ->where('entity_id', $entityId)
@@ -227,6 +226,9 @@ class SearchService
             $existing->title = $title;
             $existing->body = $body;
             $existing->tags = json_encode($tags);
+            $existing->author = $author;
+            $existing->view_count = $viewCount;
+            $existing->reply_count = $replyCount;
             $existing->normalized_text = $this->normalizeText($title . ' ' . $body);
             $existing->pinyin_text = $pinyinText;
             $existing->save();
@@ -237,6 +239,9 @@ class SearchService
             $index->title = $title;
             $index->body = $body;
             $index->tags = json_encode($tags);
+            $index->author = $author;
+            $index->view_count = $viewCount;
+            $index->reply_count = $replyCount;
             $index->normalized_text = $this->normalizeText($title . ' ' . $body);
             $index->pinyin_text = $pinyinText;
             $index->save();
@@ -340,6 +345,9 @@ class SearchService
             'title' => $r->title,
             'body' => mb_substr($r->body, 0, 200),
             'tags' => json_decode($r->tags, true) ?: [],
+            'author' => $r->author ?? '',
+            'view_count' => (int) ($r->view_count ?? 0),
+            'reply_count' => (int) ($r->reply_count ?? 0),
             'url' => $this->getUrl($r->entity_type, $r->entity_id),
             'updated_at' => $r->updated_at,
         ];
@@ -359,6 +367,16 @@ class SearchService
 
         if (preg_match("/(.{0,60})({$escapedQuery})(.{0,60})/i", $r->body, $m)) {
             $highlights['body'] = '...' . $m[1] . '<em>' . $m[2] . '</em>' . $m[3] . '...';
+        }
+
+        if (!empty($r->author) && stripos($r->author, $query) !== false) {
+            $highlights['author'] = preg_replace("/({$escapedQuery})/i", '<em>$1</em>', htmlspecialchars($r->author));
+        }
+
+        $tags = json_decode($r->tags, true) ?: [];
+        $matchedTags = array_filter($tags, fn($t) => stripos($t, $query) !== false);
+        if (!empty($matchedTags)) {
+            $highlights['tags'] = array_values($matchedTags);
         }
 
         return $highlights;

@@ -9,6 +9,10 @@ layui.define(['jquery', 'layer', 'form', 'common'], function (exports) {
     var common = layui.common;
 
     var notifications = {
+        initList: function () {
+            this.init();
+        },
+
         init: function () {
             this.load();
             this.bindEvents();

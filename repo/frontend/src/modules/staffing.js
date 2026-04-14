@@ -10,6 +10,15 @@ layui.define(['jquery', 'layer', 'form', 'common'], function (exports) {
     var staffing = {
         currentActivityId: null,
 
+        initList: function () {
+            var params = new URLSearchParams(window.location.search);
+            var activityId = params.get('activity_id');
+            if (activityId) {
+                this.load(parseInt(activityId, 10));
+            }
+            this.bindEvents();
+        },
+
         load: function (activityId) {
             this.currentActivityId = activityId;
             common.request({

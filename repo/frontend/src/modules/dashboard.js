@@ -8,8 +8,14 @@ layui.define(['jquery', 'layer', 'common'], function (exports) {
     var common = layui.common;
 
     var dashboard = {
+        dragSrcWidget: null,
+
         init: function () {
+            this.loadLayout();
             this.load();
+            this.initDragDrop();
+            this.bindFavoriteButtons();
+            this.bindLayoutButtons();
         },
 
         load: function () {
@@ -102,6 +108,106 @@ layui.define(['jquery', 'layer', 'common'], function (exports) {
                         if ($btn.length) $btn.text('☆ Favorite').removeClass('favorited');
                     }
                 }
+            });
+        },
+
+        initDragDrop: function () {
+            var that = this;
+            var container = document.getElementById('dashboard-widgets');
+            if (!container) return;
+
+            var widgets = container.querySelectorAll('.dashboard-widget');
+            widgets.forEach(function (widget) {
+                widget.addEventListener('dragstart', function (e) {
+                    that.dragSrcWidget = widget;
+                    e.dataTransfer.effectAllowed = 'move';
+                    e.dataTransfer.setData('text/plain', widget.getAttribute('data-widget-id'));
+                });
+
+                widget.addEventListener('dragover', function (e) {
+                    e.preventDefault();
+                    e.dataTransfer.dropEffect = 'move';
+                    widget.classList.add('drag-over');
+                    return false;
+                });
+
+                widget.addEventListener('dragleave', function () {
+                    widget.classList.remove('drag-over');
+                });
+
+                widget.addEventListener('drop', function (e) {
+                    e.stopPropagation();
+                    widget.classList.remove('drag-over');
+                    if (that.dragSrcWidget !== widget) {
+                        // Swap positions in the DOM
+                        var srcNext = that.dragSrcWidget.nextSibling;
+                        var tgtNext = widget.nextSibling;
+                        if (tgtNext === that.dragSrcWidget) {
+                            container.insertBefore(that.dragSrcWidget, widget);
+                        } else {
+                            container.insertBefore(widget, srcNext);
+                            container.insertBefore(that.dragSrcWidget, tgtNext);
+                        }
+                    }
+                    return false;
+                });
+
+                widget.addEventListener('dragend', function () {
+                    widgets.forEach(function (w) { w.classList.remove('drag-over'); });
+                });
+            });
+        },
+
+        saveLayout: function () {
+            var container = document.getElementById('dashboard-widgets');
+            if (!container) return;
+            var order = [];
+            container.querySelectorAll('.dashboard-widget').forEach(function (w) {
+                order.push(w.getAttribute('data-widget-id'));
+            });
+            common.request({
+                url: '/dashboard/custom',
+                method: 'POST',
+                data: { layout: order },
+                success: function (res) {
+                    if (res.success) {
+                        layer.msg('Layout saved', { icon: 1 });
+                    }
+                }
+            });
+        },
+
+        loadLayout: function () {
+            var container = document.getElementById('dashboard-widgets');
+            if (!container) return;
+            common.request({
+                url: '/dashboard/custom',
+                success: function (res) {
+                    if (res.success && res.data && Array.isArray(res.data.layout)) {
+                        var order = res.data.layout;
+                        order.forEach(function (widgetId) {
+                            var el = container.querySelector('[data-widget-id="' + widgetId + '"]');
+                            if (el) container.appendChild(el);
+                        });
+                    }
+                }
+            });
+        },
+
+        bindLayoutButtons: function () {
+            var that = this;
+            $('#btn-save-layout').on('click', function () { that.saveLayout(); });
+            $('#btn-reset-layout').on('click', function () {
+                common.request({
+                    url: '/dashboard/custom',
+                    method: 'DELETE',
+                    success: function (res) {
+                        if (res.success) {
+                            layer.msg('Layout reset', { icon: 1 });
+                            that.load();
+                        }
+                    }
+                });
             });
         },
 

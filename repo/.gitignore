@@ -5,8 +5,9 @@ frontend/node_modules/
 # Runtime
 backend/runtime/
 
-# Environment
+# Environment — never commit live credentials
 .env
+backend/.env
 
 # OS files
 .DS_Store

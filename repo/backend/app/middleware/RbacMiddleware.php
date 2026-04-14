@@ -32,7 +32,9 @@ class RbacMiddleware
         }
 
         if (!$user->hasPermission($permission)) {
-            \think\facade\Log::warning("Permission denied: user {$user->id} ({$user->username}) denied '{$permission}' on {$request->method()} {$request->path()}");
+            $requestInfo = $request->method();
+            try { $requestInfo .= ' ' . $request->path(); } catch (\Throwable $e) {}
+            \think\facade\Log::warning("Permission denied: user {$user->id} ({$user->username}) denied '{$permission}' on {$requestInfo}");
             return json([
                 'success' => false,
                 'code' => 403,

@@ -6,8 +6,6 @@ use app\model\Shipment;
 use app\model\ScanEvent;
 use app\model\ShipmentException;
 use app\model\Order;
-
-class ShipmentService
 {
     const STATUS_CREATED = 'created';
     const STATUS_IN_TRANSIT = 'in_transit';
@@ -132,7 +130,7 @@ class ShipmentService
     }
 
     /**
-     * Confirm delivery.
+     * Confirm delivery and emit arrival_reminder notification to the order owner.
      */
     public function confirmDelivery(int $shipmentId, $currentUser): array
     {
@@ -143,6 +141,24 @@ class ShipmentService
 
         $shipment->status = self::STATUS_DELIVERED;
         $shipment->save();
+
+        // Notify the order owner that their shipment has arrived
+        $order = Order::find($shipment->order_id);
+        if ($order && $order->created_by) {
+            try {
+                $notificationService = new NotificationService();
+                $notificationService->create(
+                    $order->created_by,
+                    'arrival_reminder',
+                    'Shipment Arrived',
+                    'Your shipment for Order #' . $shipment->order_id . ' has been delivered.',
+                    'shipment',
+                    $shipmentId
+                );
+            } catch (\Exception $e) {
+                // Notification suppressed by user preference — delivery still succeeds
+            }
+        }
 
         return $this->formatShipment($shipment);
     }

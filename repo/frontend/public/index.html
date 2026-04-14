@@ -81,33 +81,22 @@
     .layui-layer-title { background: #409eff !important; color: #fff !important; }
     </style>
     <script>
-    // Get UI helpers
-    function badge(s) {
-        var colors = {active:'bg-green',disabled:'bg-red',placed:'bg-blue',paid:'bg-green',pending:'bg-orange',draft:'bg-gray',completed:'bg-green',published:'bg-blue',in_progress:'bg-blue',canceled:'bg-red',closed:'bg-gray'};
-        return '<span class="status-badge '+(colors[s]||'bg-gray')+'">'+(s||'').toLowerCase()+'</span>';
-    }
-
-    // Dashboard stats template
-    function statCard(num, label, color) {
-        return '<div class="stat-card" style="background:'+color+'"><div class="stat-num">'+num+'</div><div class="stat-label">'+label+'</div></div>';
-    }
-
-    // View definitions
-    var views = {
-        home: '<div style="padding:30px;"><h2 style="font-size:28px;font-weight:300;color:#333;margin-bottom:10px;">Welcome to CampusOps</h2><p style="color:#666;font-size:16px;">Unified Campus Operations & Logistics Management</p></div>',
-        dashboard: '<div class="stats-row" id="dash-stats"></div><div class="layui-row" id="dash-widgets"></div>',
-        users: '<div class="layui-card"><div class="layui-card-header"><span>User Management</span><button class="add-btn" id="btn-add-user" style="float:right;">+ Add User</button></div><div class="layui-card-body"><table class="layui-table"><thead><tr><th>ID</th><th>Username</th><th>Role</th><th>Status</th><th>Created</th><th>Actions</th></tr></thead><tbody id="users-tbody"></tbody></table></div></div>',
-        activities: '<div class="layui-card"><div class="layui-card-header"><span>Activities</span><button class="add-btn" id="btn-add-activity" style="float:right;">+ Create Activity</button></div><div class="layui-card-body"><table class="layui-table"><thead><tr><th>ID</th><th>Title</th><th>State</th><th>Max</th><th>Created</th><th>Actions</th></tr></thead><tbody id="activities-tbody"></tbody></table></div></div>',
-        orders: '<div class="layui-card"><div class="layui-card-header"><span>Orders</span><button class="add-btn" id="btn-add-order" style="float:right;">+ Create Order</button></div><div class="layui-card-body"><table class="layui-table"><thead><tr><th>ID</th><th>Order #</th><th>Status</th><th>Total</th><th>Created</th><th>Actions</th></tr></thead><tbody id="orders-tbody"></tbody></table></div></div>',
-        violations: '<div class="layui-card"><div class="layui-card-header">Violations</div><div class="layui-card-body"><table class="layui-table"><thead><tr><th>ID</th><th>User</th><th>Rule</th><th>Points</th><th>Status</th><th>Created</th></tr></thead><tbody id="violations-tbody"></tbody></table></div></div>',
-        search: '<div class="layui-card"><div class="layui-card-header">Global Search</div><div class="layui-card-body"><div class="search-box"><input type="text" id="search-input" placeholder="Search activities, orders, users..."> <button class="add-btn" id="btn-search">Search</button></div><div id="search-results"></div></div></div>',
-        audit: '<div class="layui-card"><div class="layui-card-header">Audit Log</div><div class="layui-card-body"><table class="layui-table"><thead><tr><th>ID</th><th>User</th><th>Action</th><th>Entity</th><th>Time</th></tr></thead><tbody id="audit-tbody"></tbody></table></div></div>',
-        shipments: '<div class="layui-card"><div class="layui-card-header"><span>Shipments</span></div><div class="layui-card-body"><div style="margin-bottom:15px;display:flex;gap:10px;"><input type="text" id="filter-order-id" class="layui-input" placeholder="Order ID" style="width:150px;"> <select id="filter-status" class="layui-input" style="width:150px;"><option value="">All Status</option><option value="created">Created</option><option value="in_transit">In Transit</option><option value="delivered">Delivered</option><option value="exception">Exception</option></select> <button class="add-btn" id="btn-search">Search</button></div><table class="layui-table"><thead><tr><th>ID</th><th>Order</th><th>Tracking</th><th>Carrier</th><th>Status</th><th>Origin</th><th>Destination</th><th>Created</th><th>Actions</th></tr></thead><tbody id="shipments-tbody"></tbody></table><div id="shipments-pagination"></div></div></div>',
-        tasks: '<div class="layui-card"><div class="layui-card-header"><span>Tasks</span><button class="add-btn" id="btn-add-task" style="float:right;">+ Add Task</button></div><div class="layui-card-body"><table class="layui-table"><thead><tr><th>ID</th><th>Title</th><th>Assignee</th><th>Status</th><th>Due Date</th><th>Actions</th></tr></thead><tbody id="tasks-tbody"></tbody></table></div></div>',
-        staffing: '<div class="layui-card"><div class="layui-card-header"><span>Staffing</span></div><div class="layui-card-body"><table class="layui-table"><thead><tr><th>ID</th><th>Activity</th><th>User</th><th>Role</th><th>Status</th><th>Created</th></tr></thead><tbody id="staffing-tbody"></tbody></table></div></div>',
-        checklists: '<div class="layui-card"><div class="layui-card-header"><span>Checklists</span></div><div class="layui-card-body"><table class="layui-table"><thead><tr><th>ID</th><th>Title</th><th>Items</th><th>Progress</th><th>Created</th><th>Actions</th></tr></thead><tbody id="checklists-tbody"></tbody></table></div></div>',
-        notifications: '<div class="layui-card"><div class="layui-card-header"><span>Notifications</span></div><div class="layui-card-body"><div id="notifications-list"></div></div></div>',
-        approvals: '<div class="layui-card"><div class="layui-card-header"><span>Pending Approvals</span></div><div class="layui-card-body"><table class="layui-table"><thead><tr><th>ID</th><th>Type</th><th>Requester</th><th>Details</th><th>Status</th><th>Actions</th></tr></thead><tbody id="approvals-tbody"></tbody></table></div></div>'
+    // Route view names to their modular HTML files
+    var viewPaths = {
+        'home':          '/src/views/home.html',
+        'dashboard':     '/src/views/dashboard/home.html',
+        'users':         '/src/views/users/list.html',
+        'activities':    '/src/views/activities/list.html',
+        'orders':        '/src/views/orders/list.html',
+        'violations':    '/src/views/violations/list.html',
+        'search':        '/src/views/search/results.html',
+        'audit':         '/src/views/audit/list.html',
+        'shipments':     '/src/views/shipments/list.html',
+        'tasks':         '/src/views/tasks/list.html',
+        'staffing':      '/src/views/staffing/list.html',
+        'checklists':    '/src/views/checklists/list.html',
+        'notifications': '/src/views/notifications/list.html',
+        'approvals':     '/src/views/approvals/list.html'
     };
 
     // Menus per role
@@ -150,202 +139,52 @@
     };
 
     var currentView = '';
-    var api, layer;
 
+    // Load a modular view file into the content area.
+    // Each view file contains its own <script> with layui.use() that
+    // calls initList() on the appropriate module — no inline data logic here.
     function showView(view) {
         currentView = view;
-        document.getElementById('app-content-inner').innerHTML = views[view] || '<div>Not found</div>';
-        setTimeout(function() { bindEvents(view); loadData(view); }, 50);
-    }
-
-    // Action functions
-    window.editUser = function(id, username, role) {
-        layer.open({type:1, title:'Edit: '+username, content:'<div style="padding:20px;"><select id="edit-role" class="layui-input"><option value="regular_user">Regular User</option><option value="administrator">Admin</option><option value="operations_staff">Ops Staff</option><option value="team_lead">Team Lead</option><option value="reviewer">Reviewer</option></select></div>', btn:['Save','Cancel'], yes:function() {
-            api.request({url:'/users/'+id, method:'PUT', data:{role:document.getElementById('edit-role').value}, success:function(){ layer.msg('Updated'); showView('users'); }});
-        }});
-    };
-    window.viewActivity = function(id) {
-        api.request({url:'/activities/'+id, success:function(r){ if(r.success) layer.open({type:1, title:r.data.title, content:'<div style="padding:20px;"><p><strong>State:</strong> '+badge(r.data.state)+'</p><p><strong>Max:</strong> '+(r.data.max_headcount||0)+'</p><hr><p>'+(r.data.body||'No description')+'</p></div>', area:['400px','300px']}); }});
-    };
-    window.viewOrder = function(id) {
-        api.request({url:'/orders/'+id, success:function(r){ if(r.success) layer.open({type:1, title:'Order #'+id, content:'<div style="padding:20px;"><p><strong>Status:</strong> '+badge(r.data.state)+'</p><p><strong>Amount:</strong> $'+(r.data.amount||0)+'</p></div>', area:['350px','200px']}); }});
-    };
-
-    function bindEvents(view) {
-        switch(view) {
-            case 'users': document.getElementById('btn-add-user').onclick = function() { layer.open({type:1, title:'Add User', content:'<div style="padding:20px;"><input id="new-username" placeholder="Username" class="layui-input" style="margin-bottom:10px;"><input id="new-password" placeholder="Password" class="layui-input" style="margin-bottom:10px;"><select id="new-role" class="layui-input"><option value="regular_user">Regular</option><option value="administrator">Admin</option><option value="operations_staff">Ops</option><option value="team_lead">Lead</option><option value="reviewer">Reviewer</option></select></div>', btn:['Save','Cancel'], yes:function() {
-                var u = document.getElementById('new-username').value;
-                if(u.length>=3) api.request({url:'/users', method:'POST', data:{username:u, password:document.getElementById('new-password').value||'CampusOps1', role:document.getElementById('new-role').value, status:'active'}, success:function(){ layer.msg('Created'); showView('users'); }});
-            }});}; break;
-            case 'activities': document.getElementById('btn-add-activity').onclick = function() { layer.open({type:1, title:'Create Activity', content:'<div style="padding:20px;"><input id="new-title" placeholder="Title" class="layui-input" style="margin-bottom:10px;"><textarea id="new-body" placeholder="Description" class="layui-textarea" style="margin-bottom:10px;"></textarea><input id="new-max" type="number" placeholder="Max participants" class="layui-input"></div>', btn:['Save','Cancel'], yes:function() {
-                api.request({url:'/activities', method:'POST', data:{title:document.getElementById('new-title').value, body:document.getElementById('new-body').value, max_headcount:document.getElementById('new-max').value||0, state:'draft'}, success:function(){ layer.msg('Created'); showView('activities'); }});
-            }});}; break;
-            case 'orders': document.getElementById('btn-add-order').onclick = function() { layer.open({type:1, title:'Create Order', content:'<div style="padding:20px;"><input id="new-activity-id" type="number" placeholder="Activity ID" class="layui-input" style="margin-bottom:10px;"><input id="new-amount" type="number" placeholder="Amount" class="layui-input"></div>', btn:['Create','Cancel'], yes:function() {
-                api.request({url:'/orders', method:'POST', data:{activity_id:parseInt(document.getElementById('new-activity-id').value)||0, amount:parseFloat(document.getElementById('new-amount').value)||0}, success:function(){ layer.msg('Created'); showView('orders'); }});
-            }});}; break;
-            case 'search': document.getElementById('btn-search').onclick = function() {
-                var q = document.getElementById('search-input').value;
-                if(q.length>=2) api.request({url:'/search?q='+encodeURIComponent(q), success:function(r){ var el=document.getElementById('search-results'); 
-                    if(r.success && r.data && r.data.list && r.data.list.length) {
-                        el.innerHTML = r.data.list.map(function(i){return '<div class="search-result-item" onclick="showView(\''+i.type+'s\')"><div class="result-title">'+i.title+'</div><div class="result-type">'+i.type+'</div></div>';}).join('');
-                    } else { el.innerHTML = '<p class="empty">No results found</p>'; }
-                }});
-            }; break;
-        }
-    }
-
-    function loadData(view) {
-        if (view === 'dashboard') {
-            api.request({url:'/dashboard', success:function(r){ 
-                var statsEl = document.getElementById('dash-stats');
-                var widgetsEl = document.getElementById('dash-widgets');
-                if (r.success && r.data && r.data.widgets) {
-                    var w = r.data.widgets;
-                    // Calculate totals
-                    var totalOrders = w.orders_by_state ? w.orders_by_state.reduce(function(a,b){return a+(b.count||0)},0) : 0;
-                    var totalActivities = w.activities_by_state ? w.activities_by_state.reduce(function(a,b){return a+(b.count||0)},0) : 0;
-                    // Stats cards
-                    statsEl.innerHTML = statCard(totalOrders, 'Total Orders', 'linear-gradient(135deg, #667eea, #764ba2)') + 
-                                    statCard(totalActivities, 'Activities', 'linear-gradient(135deg, #f093fb, #f5576c)') +
-                                    statCard(w.orders_by_state ? w.orders_by_state.find(function(s){return s.state==='paid'})?.count||0 : 0, 'Paid', 'linear-gradient(135deg, #4facfe, #00c6fb)') +
-                                    statCard(w.orders_by_state ? w.orders_by_state.find(function(s){return s.state==='pending_payment'})?.count||0 : 0, 'Pending', 'linear-gradient(135deg, #fa709a, #fee140)');
-                    // Widgets below
-                    var html = '<div class="layui-col-md6" style="padding-right:10px;"><div class="layui-card"><div class="layui-card-header">Orders by State</div><div class="layui-card-body">';
-                    if (w.orders_by_state && w.orders_by_state.length) {
-                        w.orders_by_state.forEach(function(o) { html += '<div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid #f0f0f0;"><span>'+badge(o.state)+'</span><span style="font-weight:600;">'+o.count+'</span></div>'; });
-                    } else { html += '<p class="empty">No data</p>'; }
-                    html += '</div></div></div><div class="layui-col-md6" style="padding-left:10px;"><div class="layui-card"><div class="layui-card-header">Activities by State</div><div class="layui-card-body">';
-                    if (w.activities_by_state && w.activities_by_state.length) {
-                        w.activities_by_state.forEach(function(a) { html += '<div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid #f0f0f0;"><span>'+badge(a.state)+'</span><span style="font-weight:600;">'+a.count+'</span></div>'; });
-                    } else { html += '<p class="empty">No data</p>'; }
-                    html += '</div></div></div>';
-                    widgetsEl.innerHTML = html;
-                }
-            }});
+        var path = viewPaths[view];
+        if (!path) {
+            document.getElementById('app-content-inner').innerHTML =
+                '<div style="padding:20px;color:#999;">View not found: ' + view + '</div>';
             return;
         }
-        if (view === 'users') {
-            api.request({url:'/users?limit=20', success:function(r){ 
-                var tb = document.getElementById('users-tbody');
-                var html = '';
-                if (r.success && r.data && r.data.list && r.data.list.length) {
-                    r.data.list.forEach(function(u) { 
-                        html += '<tr><td>'+u.id+'</td><td><strong>'+u.username+'</strong></td><td>'+(u.role||'')+'</td><td>'+badge(u.status)+'</td><td>'+(u.created_at||'').substring(0,10)+'</td><td><button class="action-btn" onclick="editUser('+u.id+',\''+u.username+'\',\''+u.role+'\')">Edit</button></td></tr>'; 
-                    });
-                } else { html = '<tr><td colspan="6" class="empty">No users</td></tr>'; }
-                tb.innerHTML = html;
-            }});
-            return;
-        }
-        if (view === 'activities') {
-            api.request({url:'/activities?limit=20', success:function(r){ 
-                var tb = document.getElementById('activities-tbody');
-                var html = '';
-                if (r.success && r.data && r.data.list && r.data.list.length) {
-                    r.data.list.forEach(function(a) { 
-                        html += '<tr><td>'+a.id+'</td><td><strong>'+a.title+'</strong></td><td>'+badge(a.state)+'</td><td>'+(a.max_headcount||0)+'</td><td>'+(a.created_at||'').substring(0,10)+'</td><td><button class="action-btn" onclick="viewActivity('+a.id+')">View</button></td></tr>'; 
-                    });
-                } else { html = '<tr><td colspan="6" class="empty">No activities</td></tr>'; }
-                tb.innerHTML = html;
-            }});
-            return;
-        }
-        if (view === 'orders') {
-            api.request({url:'/orders?limit=20', success:function(r){ 
-                var tb = document.getElementById('orders-tbody');
-                var html = '';
-                if (r.success && r.data && r.data.list && r.data.list.length) {
-                    r.data.list.forEach(function(o) { 
-                        html += '<tr><td>'+o.id+'</td><td><strong>#'+o.id+'</strong></td><td>'+badge(o.state)+'</td><td>$'+(o.amount||0)+'</td><td>'+(o.created_at||'').substring(0,10)+'</td><td><button class="action-btn" onclick="viewOrder('+o.id+')">View</button></td></tr>';
-                    });
-                } else { html = '<tr><td colspan="6" class="empty">No orders</td></tr>'; }
-                tb.innerHTML = html;
-            }});
-            return;
-        }
-        if (view === 'violations') {
-            api.request({url:'/violations?limit=20', success:function(r){ 
-                var tb = document.getElementById('violations-tbody');
-                var html = '';
-                if (r.success && r.data && r.data.list && r.data.list.length) {
-                    r.data.list.forEach(function(v) { 
-                        html += '<tr><td>'+v.id+'</td><td>'+(v.user_id||'')+'</td><td>'+(v.rule_name||'')+'</td><td>'+(v.points||0)+'</td><td>'+(v.status||'')+'</td><td>'+(v.created_at||'').substring(0,10)+'</td></tr>'; 
-                    });
-                } else { html = '<tr><td colspan="6" class="empty">No violations</td></tr>'; }
-                tb.innerHTML = html;
-            }});
-            return;
-        }
-        if (view === 'audit') {
-            api.request({url:'/audit?limit=20', success:function(r){
-                var tb = document.getElementById('audit-tbody');
-                var html = '';
-                if (r.success && r.data && r.data.list && r.data.list.length) {
-                    r.data.list.forEach(function(a) {
-                        html += '<tr><td>'+a.id+'</td><td>'+(a.username||a.user_id||'')+'</td><td>'+a.action+'</td><td>'+(a.entity_type||'')+'</td><td>'+(a.created_at||'').substring(0,19)+'</td></tr>';
-                    });
-                } else { html = '<tr><td colspan="5" class="empty">No audit records</td></tr>'; }
-                tb.innerHTML = html;
-            }});
-            return;
-        }
-        if (view === 'shipments') {
-            api.request({url:'/shipments?limit=20', success:function(r){
-                var tb = document.getElementById('shipments-tbody');
-                var html = '';
-                if (r.success && r.data && r.data.list && r.data.list.length) {
-                    r.data.list.forEach(function(s) {
-                        html += '<tr><td>'+s.id+'</td><td>'+s.order_id+'</td><td>'+(s.tracking_number||'')+'</td><td>'+(s.carrier||'')+'</td><td>'+badge(s.status)+'</td><td>'+(s.origin||'-')+'</td><td>'+(s.destination||'-')+'</td><td>'+(s.created_at||'').substring(0,19)+'</td><td><button class="action-btn" onclick="viewOrder('+s.order_id+')">Order</button></td></tr>';
-                    });
-                } else { html = '<tr><td colspan="9" class="empty">No shipments</td></tr>'; }
-                tb.innerHTML = html;
-            }});
-            return;
-        }
-        if (view === 'notifications') {
-            api.request({url:'/notifications?limit=20', success:function(r){
-                var el = document.getElementById('notifications-list');
-                var html = '';
-                if (r.success && r.data && r.data.list && r.data.list.length) {
-                    r.data.list.forEach(function(n) {
-                        var readClass = n.read_at ? '' : 'style="font-weight:bold;background:#f0f7ff;"';
-                        html += '<div '+readClass+' style="padding:12px;border-bottom:1px solid #f0f0f0;"><div>'+n.body+'</div><div style="font-size:12px;color:#999;margin-top:5px;">'+(n.created_at||'').substring(0,19)+'</div></div>';
-                    });
-                } else { html = '<p class="empty">No notifications</p>'; }
-                el.innerHTML = html;
-            }});
-            return;
-        }
+        layui.jquery('#app-content-inner').load(path, function(response, status) {
+            if (status === 'error') {
+                layui.jquery('#app-content-inner').html(
+                    '<div style="padding:20px;color:#c00;">Failed to load view.</div>'
+                );
+            }
+        });
     }
 
     // Initialize
     layui.use(['element','layer','jquery','common'], function() {
         var element = layui.element;
-        layer = layui.layer;
+        var layer = layui.layer;
         var $ = layui.jquery;
-        api = layui.common;
+        var api = layui.common;
 
         // Check auth
         var token = api.getToken();
-        if(!token) { window.location.href = '/login.html'; return; }
+        if (!token) { window.location.href = '/login.html'; return; }
 
         var userInfo = api.getUser();
         document.getElementById('header-username').textContent = userInfo.username || 'User';
 
-        // Build menu
+        // Build sidebar menu
         var menuItems = menus[userInfo.role] || menus['regular_user'];
         var ul = document.getElementById('sidebar-nav');
         menuItems.forEach(function(item, i) {
             var li = document.createElement('li');
-            li.className = 'layui-nav-item' + (i===0 ? ' layui-this' : '');
-            li.innerHTML = '<a href="javascript:;"><i class="layui-icon '+item.icon+'"></i> <span>'+item.title+'</span></a>';
-            li.onclick = function() { 
-                // Remove active from all
-                var items = ul.querySelectorAll('li');
-                items.forEach(function(x) { x.classList.remove('layui-this'); });
-                // Add active to clicked
+            li.className = 'layui-nav-item' + (i === 0 ? ' layui-this' : '');
+            li.innerHTML = '<a href="javascript:;"><i class="layui-icon ' + item.icon + '"></i> <span>' + item.title + '</span></a>';
+            li.onclick = function() {
+                ul.querySelectorAll('li').forEach(function(x) { x.classList.remove('layui-this'); });
                 li.classList.add('layui-this');
-                showView(item.view); 
+                showView(item.view);
             };
             ul.appendChild(li);
         });
@@ -353,7 +192,7 @@
         showView('dashboard');
 
         document.getElementById('btn-logout').onclick = function() {
-            api.request({url:'/auth/logout', method:'POST', complete:function() {
+            api.request({url: '/auth/logout', method: 'POST', complete: function() {
                 localStorage.removeItem('campusops_token');
                 localStorage.removeItem('campusops_user');
                 window.location.href = '/login.html';

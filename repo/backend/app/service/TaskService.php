@@ -4,6 +4,7 @@ namespace app\service;
 
 use app\model\Task;
 use app\model\User;
+use app\model\ActivityGroup;
 
 class TaskService
 {
@@ -51,6 +52,8 @@ class TaskService
             throw new \Exception('Task not found', 404);
         }
 
+        $this->assertActivityAccess($task->activity_id, $currentUser);
+
         if (isset($data['title'])) $task->title = $data['title'];
         if (isset($data['description'])) $task->description = $data['description'];
         if (isset($data['assigned_to'])) $task->assigned_to = $data['assigned_to'];
@@ -74,6 +77,8 @@ class TaskService
             throw new \Exception('Invalid status', 400);
         }
 
+        $this->assertActivityAccess($task->activity_id, $currentUser);
+
         $task->status = $status;
         $task->save();
 
@@ -89,7 +94,24 @@ class TaskService
         if (!$task) {
             throw new \Exception('Task not found', 404);
         }
+
+        $this->assertActivityAccess($task->activity_id, $currentUser);
+
         $task->delete();
+    }
+
+    /**
+     * Assert the current user has access to mutate records in an activity.
+     */
+    protected function assertActivityAccess(int $activityId, $currentUser): void
+    {
+        if ($currentUser->role === 'administrator') {
+            return;
+        }
+        $activity = ActivityGroup::find($activityId);
+        if ($activity && $activity->created_by !== $currentUser->id) {
+            throw new \Exception('Access denied', 403);
+        }
     }
 
     /**

@@ -10,8 +10,14 @@ layui.define(['jquery', 'layer', 'form', 'common'], function (exports) {
     var violations = {
         userInfo: null,
 
-        init: function () {
+        initList: function () {
             this.userInfo = common.getUser();
+            this.loadViolations(1);
+            this.bindEvents();
+        },
+
+        init: function () {
+            this.initList();
         },
 
         loadRules: function () {

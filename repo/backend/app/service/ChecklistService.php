@@ -4,6 +4,7 @@ namespace app\service;
 
 use app\model\Checklist;
 use app\model\ChecklistItem;
+use app\model\ActivityGroup;
 
 class ChecklistService
 {
@@ -66,6 +67,8 @@ class ChecklistService
             throw new \Exception('Checklist not found', 404);
         }
 
+        $this->assertActivityAccess($checklist->activity_id, $currentUser);
+
         if (isset($data['title'])) {
             $checklist->title = $data['title'];
             $checklist->save();
@@ -83,9 +86,25 @@ class ChecklistService
         if (!$checklist) {
             throw new \Exception('Checklist not found', 404);
         }
-        
+
+        $this->assertActivityAccess($checklist->activity_id, $currentUser);
+
         ChecklistItem::where('checklist_id', $id)->delete();
         $checklist->delete();
+    }
+
+    /**
+     * Assert the current user has access to mutate records in an activity.
+     */
+    protected function assertActivityAccess(int $activityId, $currentUser): void
+    {
+        if ($currentUser->role === 'administrator') {
+            return;
+        }
+        $activity = ActivityGroup::find($activityId);
+        if ($activity && $activity->created_by !== $currentUser->id) {
+            throw new \Exception('Access denied', 403);
+        }
     }
 
     /**

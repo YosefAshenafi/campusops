@@ -10,6 +10,15 @@ layui.define(['jquery', 'layer', 'form', 'common'], function (exports) {
     var tasks = {
         currentActivityId: null,
 
+        initList: function () {
+            var params = new URLSearchParams(window.location.search);
+            var activityId = params.get('activity_id');
+            if (activityId) {
+                this.loadTasks(parseInt(activityId, 10));
+            }
+            this.bindEvents();
+        },
+
         loadTasks: function (activityId) {
             var that = this;
             this.currentActivityId = activityId;

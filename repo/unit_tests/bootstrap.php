@@ -147,6 +147,7 @@ $tables = [
         pinyin_text TEXT NOT NULL DEFAULT '',
         author TEXT DEFAULT '',
         view_count INTEGER NOT NULL DEFAULT 0,
+        reply_count INTEGER NOT NULL DEFAULT 0,
         created_at TEXT DEFAULT NULL,
         updated_at TEXT DEFAULT NULL
     )",
@@ -239,6 +240,56 @@ $tables = [
         order_id INTEGER NOT NULL DEFAULT 0,
         tracking_number TEXT DEFAULT '',
         status TEXT DEFAULT 'pending',
+        created_at TEXT DEFAULT NULL,
+        updated_at TEXT DEFAULT NULL
+    )",
+    "CREATE TABLE IF NOT EXISTS tasks (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        activity_id INTEGER NOT NULL DEFAULT 0,
+        title TEXT NOT NULL DEFAULT '',
+        description TEXT DEFAULT '',
+        assigned_to INTEGER DEFAULT NULL,
+        status TEXT NOT NULL DEFAULT 'pending',
+        due_date TEXT DEFAULT NULL,
+        created_at TEXT DEFAULT NULL,
+        updated_at TEXT DEFAULT NULL
+    )",
+    "CREATE TABLE IF NOT EXISTS checklists (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        activity_id INTEGER NOT NULL DEFAULT 0,
+        title TEXT NOT NULL DEFAULT '',
+        created_at TEXT DEFAULT NULL,
+        updated_at TEXT DEFAULT NULL
+    )",
+    "CREATE TABLE IF NOT EXISTS checklist_items (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        checklist_id INTEGER NOT NULL DEFAULT 0,
+        label TEXT NOT NULL DEFAULT '',
+        completed INTEGER NOT NULL DEFAULT 0,
+        completed_by INTEGER DEFAULT NULL,
+        completed_at TEXT DEFAULT NULL,
+        created_at TEXT DEFAULT NULL,
+        updated_at TEXT DEFAULT NULL
+    )",
+    "CREATE TABLE IF NOT EXISTS staffing (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        activity_id INTEGER NOT NULL DEFAULT 0,
+        role TEXT NOT NULL DEFAULT '',
+        required_count INTEGER NOT NULL DEFAULT 1,
+        assigned_users TEXT NOT NULL DEFAULT '[]',
+        notes TEXT DEFAULT '',
+        created_by INTEGER NOT NULL DEFAULT 0,
+        created_at TEXT DEFAULT NULL,
+        updated_at TEXT DEFAULT NULL
+    )",
+    "CREATE TABLE IF NOT EXISTS user_preferences (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        user_id INTEGER NOT NULL DEFAULT 0,
+        arrival_reminders INTEGER NOT NULL DEFAULT 1,
+        activity_alerts INTEGER NOT NULL DEFAULT 1,
+        order_alerts INTEGER NOT NULL DEFAULT 1,
+        violation_alerts INTEGER NOT NULL DEFAULT 1,
+        dashboard_layout TEXT DEFAULT NULL,
         created_at TEXT DEFAULT NULL,
         updated_at TEXT DEFAULT NULL
     )",

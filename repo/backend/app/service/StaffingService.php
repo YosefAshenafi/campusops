@@ -3,6 +3,7 @@
 namespace app\service;
 
 use app\model\Staffing;
+use app\model\ActivityGroup;
 
 class StaffingService
 {
@@ -37,6 +38,8 @@ class StaffingService
             throw new \Exception('Staffing not found', 404);
         }
 
+        $this->assertActivityAccess($staffing->activity_id, $currentUser);
+
         if (isset($data['role'])) $staffing->role = $data['role'];
         if (isset($data['required_count'])) $staffing->required_count = $data['required_count'];
         if (isset($data['assigned_users'])) $staffing->assigned_users = json_encode($data['assigned_users']);
@@ -52,7 +55,24 @@ class StaffingService
         if (!$staffing) {
             throw new \Exception('Staffing not found', 404);
         }
+
+        $this->assertActivityAccess($staffing->activity_id, $currentUser);
+
         $staffing->delete();
+    }
+
+    /**
+     * Assert the current user has access to mutate records in an activity.
+     */
+    protected function assertActivityAccess(int $activityId, $currentUser): void
+    {
+        if ($currentUser->role === 'administrator') {
+            return;
+        }
+        $activity = ActivityGroup::find($activityId);
+        if ($activity && $activity->created_by !== $currentUser->id) {
+            throw new \Exception('Access denied', 403);
+        }
     }
 
     protected function format(Staffing $s): array

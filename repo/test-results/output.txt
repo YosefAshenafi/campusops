@@ -3,11 +3,11 @@ PHPUnit 10.5.63 by Sebastian Bergmann and contributors.
 Runtime:       PHP 8.4.8
 Configuration: /Users/yosef/Documents/Projects/Eaglepoint/campusops/repo/phpunit.xml
 
-...............................................................  63 / 130 ( 48%)
-............................................................... 126 / 130 ( 96%)
-....                                                            130 / 130 (100%)
+...............................................................  63 / 151 ( 41%)
+............................................................... 126 / 151 ( 83%)
+.........................                                       151 / 151 (100%)
 
-Time: 00:08.923, Memory: 14.00 MB
+Time: 00:16.326, Memory: 14.00 MB
 
 Activity Service (tests\services\ActivityService)
  ✔ List activities returns one row per group when multiple versions exist
@@ -66,6 +66,31 @@ Auth Service (tests\services\AuthService)
  ✔ Different salt per password
  ✔ Record failed attempt increments counter
  ✔ Reset failed attempts clears lock
+
+Http Middleware (tests\api\HttpMiddleware)
+ ✔ Auth middleware returns 401 with no authorization header
+ ✔ Auth middleware returns 401 with malformed header
+ ✔ Auth middleware returns 401 with invalid bearer token
+ ✔ Auth middleware returns 403 for inactive user
+ ✔ Auth middleware passes through for valid active token
+ ✔ Rbac middleware returns 401 when no user attached to request
+ ✔ Rbac middleware returns 403 when user lacks permission
+ ✔ Rbac middleware passes through when user has permission
+ ✔ Rbac middleware passes through with no permission required
+ ✔ Operations staff cannot access users read
+
+Object Auth (tests\api\ObjectAuth)
+ ✔ Non owner cannot update task in another users activity
+ ✔ Non owner cannot delete task in another users activity
+ ✔ Non owner cannot update task status
+ ✔ Owner can update own activity task
+ ✔ Admin can update any task
+ ✔ Non owner cannot update checklist in another users activity
+ ✔ Non owner cannot delete checklist in another users activity
+ ✔ Admin can delete any checklist
+ ✔ Non owner cannot update staffing in another users activity
+ ✔ Non owner cannot delete staffing in another users activity
+ ✔ Admin can update any staffing
 
 Order Api (tests\api\OrderApi)
  ✔ Reviewer can list all orders
@@ -157,4 +182,4 @@ Violation Service (tests\services\ViolationService)
  ✔ Final decision uphold approves violation
  ✔ Final decision reject rejects violation
 
-OK (130 tests, 222 assertions)
+OK (151 tests, 258 assertions)
