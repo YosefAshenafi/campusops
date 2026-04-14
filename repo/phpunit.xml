@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<phpunit xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:noNamespaceSchemaLocation="vendor/phpunit/phpunit/phpunit.xsd"
+         bootstrap="unit_tests/bootstrap.php"
+         cacheDirectory=".phpunit.cache"
+         executionOrder="defects"
+         failOnRisky="false"
+         failOnWarning="false"
+>
+    <testsuites>
+        <testsuite name="unit">
+            <file>unit_tests/services/AuthServiceTest.php</file>
+        </testsuite>
+    </testsuites>
+    <source>
+        <include>
+            <directory suffix=".php">backend/app/</directory>
+        </include>
+    </source>
+</phpunit>

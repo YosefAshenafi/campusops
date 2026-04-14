@@ -1,0 +1,23 @@
+PHPUnit 10.5.63 by Sebastian Bergmann and contributors.
+
+Runtime:       PHP 8.4.8
+Configuration: /Users/yosef/Documents/Projects/Eaglepoint/campusops/repo/phpunit.xml
+
+...........                                                       11 / 11 (100%)
+
+Time: 00:01.896, Memory: 8.00 MB
+
+Auth Service (tests\services\AuthService)
+ ✔ Verify password
+ ✔ Verify password returns false for wrong password
+ ✔ Set password hashes password
+ ✔ Is locked returns false when not locked
+ ✔ Is locked returns true when locked in future
+ ✔ Is locked returns false when locked in past
+ ✔ Password hash uses bcrypt algorithm
+ ✔ Salt is 32 hex characters
+ ✔ Different salt per password
+ ✔ Record failed attempt increments counter
+ ✔ Reset failed attempts clears lock
+
+OK (11 tests, 14 assertions)

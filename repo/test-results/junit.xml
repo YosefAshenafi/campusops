@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuites>
+  <testsuite name="/Users/yosef/Documents/Projects/Eaglepoint/campusops/repo/phpunit.xml" tests="11" assertions="14" errors="0" failures="0" skipped="0" time="1.894470">
+    <testsuite name="unit" tests="11" assertions="14" errors="0" failures="0" skipped="0" time="1.894470">
+      <testsuite name="tests\services\AuthServiceTest" file="/Users/yosef/Documents/Projects/Eaglepoint/campusops/repo/unit_tests/services/AuthServiceTest.php" tests="11" assertions="14" errors="0" failures="0" skipped="0" time="1.894470">
+        <testcase name="testIsLockedReturnsTrueWhenLockedInFuture" file="/Users/yosef/Documents/Projects/Eaglepoint/campusops/repo/unit_tests/services/AuthServiceTest.php" line="57" class="tests\services\AuthServiceTest" classname="tests.services.AuthServiceTest" assertions="1" time="0.001242"/>
+        <testcase name="testIsLockedReturnsFalseWhenLockedInPast" file="/Users/yosef/Documents/Projects/Eaglepoint/campusops/repo/unit_tests/services/AuthServiceTest.php" line="65" class="tests\services\AuthServiceTest" classname="tests.services.AuthServiceTest" assertions="1" time="0.000124"/>
+        <testcase name="testRecordFailedAttemptIncrementsCounter" file="/Users/yosef/Documents/Projects/Eaglepoint/campusops/repo/unit_tests/services/AuthServiceTest.php" line="100" class="tests\services\AuthServiceTest" classname="tests.services.AuthServiceTest" assertions="1" time="0.000158"/>
+        <testcase name="testIsLockedReturnsFalseWhenNotLocked" file="/Users/yosef/Documents/Projects/Eaglepoint/campusops/repo/unit_tests/services/AuthServiceTest.php" line="49" class="tests\services\AuthServiceTest" classname="tests.services.AuthServiceTest" assertions="1" time="0.000072"/>
+        <testcase name="testResetFailedAttemptsClearsLock" file="/Users/yosef/Documents/Projects/Eaglepoint/campusops/repo/unit_tests/services/AuthServiceTest.php" line="108" class="tests\services\AuthServiceTest" classname="tests.services.AuthServiceTest" assertions="2" time="0.000248"/>
+        <testcase name="testPasswordHashUsesBcryptAlgorithm" file="/Users/yosef/Documents/Projects/Eaglepoint/campusops/repo/unit_tests/services/AuthServiceTest.php" line="73" class="tests\services\AuthServiceTest" classname="tests.services.AuthServiceTest" assertions="1" time="0.191481"/>
+        <testcase name="testSaltIs32HexCharacters" file="/Users/yosef/Documents/Projects/Eaglepoint/campusops/repo/unit_tests/services/AuthServiceTest.php" line="81" class="tests\services\AuthServiceTest" classname="tests.services.AuthServiceTest" assertions="1" time="0.191515"/>
+        <testcase name="testVerifyPassword" file="/Users/yosef/Documents/Projects/Eaglepoint/campusops/repo/unit_tests/services/AuthServiceTest.php" line="12" class="tests\services\AuthServiceTest" classname="tests.services.AuthServiceTest" assertions="1" time="0.376728"/>
+        <testcase name="testVerifyPasswordReturnsFalseForWrongPassword" file="/Users/yosef/Documents/Projects/Eaglepoint/campusops/repo/unit_tests/services/AuthServiceTest.php" line="25" class="tests\services\AuthServiceTest" classname="tests.services.AuthServiceTest" assertions="1" time="0.379082"/>
+        <testcase name="testSetPasswordHashesPassword" file="/Users/yosef/Documents/Projects/Eaglepoint/campusops/repo/unit_tests/services/AuthServiceTest.php" line="37" class="tests\services\AuthServiceTest" classname="tests.services.AuthServiceTest" assertions="3" time="0.376795"/>
+        <testcase name="testDifferentSaltPerPassword" file="/Users/yosef/Documents/Projects/Eaglepoint/campusops/repo/unit_tests/services/AuthServiceTest.php" line="89" class="tests\services\AuthServiceTest" classname="tests.services.AuthServiceTest" assertions="1" time="0.377025"/>
+      </testsuite>
+    </testsuite>
+  </testsuite>
+</testsuites>
