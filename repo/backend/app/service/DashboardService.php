@@ -43,19 +43,44 @@ class DashboardService
 
     public function getCustom(int $userId): array
     {
-        return Dashboard::where('user_id', $userId)->select()->toArray();
+        $dashboard = Dashboard::where('user_id', $userId)->order('id', 'desc')->find();
+        if (!$dashboard) {
+            return ['layout' => null, 'name' => null, 'widgets' => []];
+        }
+        $result = $dashboard->toArray();
+        // Ensure layout field is always present for frontend compatibility
+        if (!isset($result['layout'])) {
+            $result['layout'] = json_decode($dashboard->widgets, true) ?: [];
+        }
+        return $result;
     }
 
     public function saveCustom(int $userId, array $data): array
     {
-        $dashboard = new Dashboard();
-        $dashboard->user_id = $userId;
-        $dashboard->name = $data['name'];
-        $dashboard->widgets = json_encode($data['widgets'] ?? []);
+        // Accept both layout (from frontend) and name/widgets (from API)
+        $layout = $data['layout'] ?? null;
+        $name = $data['name'] ?? 'custom';
+        $widgets = $layout ? $layout : ($data['widgets'] ?? []);
+
+        // Upsert: update existing or create new
+        $dashboard = Dashboard::where('user_id', $userId)->find();
+        if (!$dashboard) {
+            $dashboard = new Dashboard();
+            $dashboard->user_id = $userId;
+        }
+        $dashboard->name = $name;
+        $dashboard->widgets = json_encode($widgets);
         $dashboard->is_default = $data['is_default'] ?? false;
         $dashboard->save();
-        
-        return $dashboard->toArray();
+
+        $result = $dashboard->toArray();
+        $result['layout'] = $widgets;
+        return $result;
+    }
+
+    public function deleteCustom(int $userId): void
+    {
+        Dashboard::where('user_id', $userId)->delete();
     }
 
     public function updateCustom(int $id, int $userId, array $data): array

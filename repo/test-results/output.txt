@@ -3,11 +3,11 @@ PHPUnit 10.5.63 by Sebastian Bergmann and contributors.
 Runtime:       PHP 8.4.8
 Configuration: /Users/yosef/Documents/Projects/Eaglepoint/campusops/repo/phpunit.xml
 
-...............................................................  63 / 151 ( 41%)
-............................................................... 126 / 151 ( 83%)
-.........................                                       151 / 151 (100%)
+...............................................................  63 / 182 ( 34%)
+............................................................... 126 / 182 ( 69%)
+........................................................        182 / 182 (100%)
 
-Time: 00:16.326, Memory: 14.00 MB
+Time: 00:16.440, Memory: 16.00 MB
 
 Activity Service (tests\services\ActivityService)
  ✔ List activities returns one row per group when multiple versions exist
@@ -26,6 +26,7 @@ Activity Service (tests\services\ActivityService)
  ✔ Start throws when not published
  ✔ Complete activity transitions in progress to completed
  ✔ Archive activity transitions completed to archived
+ ✔ Update archived activity creates new version
  ✔ Get versions returns all versions
  ✔ Get change log records changes
  ✔ Signup user succeeds for published activity
@@ -67,6 +68,24 @@ Auth Service (tests\services\AuthService)
  ✔ Record failed attempt increments counter
  ✔ Reset failed attempts clears lock
 
+Checklist Service (tests\services\ChecklistService)
+ ✔ Complete item succeeds for activity owner
+ ✔ Complete item succeeds for admin
+ ✔ Complete item throws 403 for non owner
+ ✔ Complete item toggles completion
+ ✔ Create checklist succeeds for activity owner
+ ✔ Create checklist succeeds for admin
+ ✔ Create checklist throws 403 for non owner
+
+Dashboard Service (tests\services\DashboardService)
+ ✔ Get custom returns layout field when empty
+ ✔ Save custom with layout field persists correctly
+ ✔ Get custom returns layout after save
+ ✔ Save custom with name field works
+ ✔ Save custom upserts existing dashboard
+ ✔ Delete custom removes dashboard
+ ✔ Get default returns widgets structure
+
 Http Middleware (tests\api\HttpMiddleware)
  ✔ Auth middleware returns 401 with no authorization header
  ✔ Auth middleware returns 401 with malformed header
@@ -101,6 +120,9 @@ Order Service (tests\services\OrderService)
  ✔ Cancel throws when order is ticketed
  ✔ Cancel throws when order is closed
  ✔ Cancel succeeds for placed order
+ ✔ Cancel throws when order is paid
+ ✔ Cancel throws when order is paid even for admin
+ ✔ Cancel succeeds for pending payment order
  ✔ Refund throws when caller is not administrator
  ✔ Refund succeeds for administrator
  ✔ Close throws when order is not ticketed
@@ -155,6 +177,19 @@ Search Service (tests\services\SearchService)
  ✔ Cleanup does not remove recent orphaned entries
  ✔ Rebuild reindexes all entities
  ✔ Get did you mean returns null when no suggestion
+ ✔ Search results escape html in title and body
+ ✔ Highlights escape html content
+ ✔ Search logistics sorts by popularity
+ ✔ Search logistics sorts by tracking
+
+Shipment Service (tests\services\ShipmentService)
+ ✔ Shipment service can be instantiated
+ ✔ Create shipment returns valid structure
+ ✔ Get shipment returns shipment
+ ✔ Get shipment throws 404 for nonexistent
+ ✔ Process scan creates scan event
+ ✔ Confirm delivery updates status
+ ✔ Report exception updates status to exception
 
 Violation Service (tests\services\ViolationService)
  ✔ List violations for regular user returns only own violations
@@ -176,10 +211,12 @@ Violation Service (tests\services\ViolationService)
  ✔ Get user violations excludes rejected
  ✔ Get group violations aggregates member points
  ✔ Submit appeal changes status to under review
+ ✔ Submit appeal throws 403 for non owner
+ ✔ Submit appeal succeeds for admin
  ✔ Review appeal sets reviewer info
  ✔ Review appeal throws without permission
  ✔ Review appeal throws when notes empty
  ✔ Final decision uphold approves violation
  ✔ Final decision reject rejects violation
 
-OK (151 tests, 258 assertions)
+OK (182 tests, 313 assertions)

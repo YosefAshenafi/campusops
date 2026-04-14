@@ -103,7 +103,7 @@ Route::group('api/v1', function () {
             Route::put('/:id/address', 'OrderController/updateAddress')
                 ->middleware('rbac', 'orders.update');
             Route::post('/:id/request-address-correction', 'OrderController/requestAddressCorrection')
-                ->middleware('rbac', 'orders.update');
+                ->middleware('rbac', 'orders.request_correction');
             Route::post('/:id/approve-address-correction', 'OrderController/approveAddressCorrection')
                 ->middleware('rbac', 'orders.approve');
         });
@@ -282,6 +282,8 @@ Route::group('api/v1', function () {
             Route::post('custom', 'DashboardController/createCustom')
                 ->middleware('rbac', 'dashboard.create');
             Route::put('custom/:id', 'DashboardController/updateCustom')
+                ->middleware('rbac', 'dashboard.update');
+            Route::delete('custom', 'DashboardController/deleteCustom')
                 ->middleware('rbac', 'dashboard.update');
             Route::get('favorites', 'DashboardController/favorites')
                 ->middleware('rbac', 'dashboard.read');

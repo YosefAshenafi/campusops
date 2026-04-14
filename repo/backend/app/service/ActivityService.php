@@ -118,13 +118,20 @@ class ActivityService
     }
 
     /**
-     * Get all signups for an activity.
+     * Get signups for an activity.
+     * Regular users only see their own signup; privileged roles see the full roster.
      */
-    public function getSignups(int $groupId): array
+    public function getSignups(int $groupId, int $currentUserId = 0, string $currentRole = ''): array
     {
-        $signups = ActivitySignup::where('group_id', $groupId)
-            ->order('id', 'desc')
-            ->select();
+        $query = ActivitySignup::where('group_id', $groupId)
+            ->order('id', 'desc');
+
+        // Data isolation: regular users only see their own signup
+        if ($currentRole === 'regular_user' && $currentUserId > 0) {
+            $query->where('user_id', $currentUserId);
+        }
+
+        $signups = $query->select();
 
         $result = [];
         foreach ($signups as $s) {
@@ -205,7 +212,8 @@ class ActivityService
             ->order('version_number', 'desc')
             ->find();
 
-        if ($currentVersion->state === self::STATE_PUBLISHED) {
+        // Enforce immutable-history: any edit after publication creates a new version
+        if (in_array($currentVersion->state, [self::STATE_PUBLISHED, self::STATE_IN_PROGRESS, self::STATE_COMPLETED, self::STATE_ARCHIVED])) {
             return $this->createNewVersion($id, $data, $currentUser);
         }
 
@@ -330,6 +338,7 @@ class ActivityService
         }
 
         $version->state = self::STATE_IN_PROGRESS;
+        $version->started_at = date('Y-m-d H:i:s');
         $version->save();
 
         $this->auditService->log($currentUser->id, 'activity', $id, 'state_change', self::STATE_PUBLISHED, self::STATE_IN_PROGRESS);
@@ -352,6 +361,7 @@ class ActivityService
         }
 
         $version->state = self::STATE_COMPLETED;
+        $version->completed_at = date('Y-m-d H:i:s');
         $version->save();
 
         $this->auditService->log($currentUser->id, 'activity', $id, 'state_change', self::STATE_IN_PROGRESS, self::STATE_COMPLETED);
@@ -374,6 +384,7 @@ class ActivityService
         }
 
         $version->state = self::STATE_ARCHIVED;
+        $version->archived_at = date('Y-m-d H:i:s');
         $version->save();
 
         $this->auditService->log($currentUser->id, 'activity', $id, 'state_change', self::STATE_COMPLETED, self::STATE_ARCHIVED);
@@ -522,6 +533,9 @@ class ActivityService
             'eligibility_tags' => json_decode($version->eligibility_tags, true) ?: [],
             'required_supplies' => json_decode($version->required_supplies, true) ?: [],
             'published_at' => $version->published_at,
+            'started_at' => $version->started_at ?? null,
+            'completed_at' => $version->completed_at ?? null,
+            'archived_at' => $version->archived_at ?? null,
             'created_at' => $group->created_at,
             'current_signups' => ActivitySignup::where('group_id', $group->id)
                 ->whereIn('status', ['confirmed', 'pending_acknowledgement'])
@@ -547,6 +561,9 @@ class ActivityService
             'eligibility_tags' => json_decode($version->eligibility_tags, true) ?: [],
             'required_supplies' => json_decode($version->required_supplies, true) ?: [],
             'published_at' => $version->published_at,
+            'started_at' => $version->started_at ?? null,
+            'completed_at' => $version->completed_at ?? null,
+            'archived_at' => $version->archived_at ?? null,
             'created_at' => $version->created_at,
         ];
     }

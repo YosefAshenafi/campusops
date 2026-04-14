@@ -58,6 +58,32 @@ class OrderServiceTest extends TestCase
         $this->assertEquals('canceled', $result['state']);
     }
 
+    public function testCancelThrowsWhenOrderIsPaid(): void
+    {
+        $order = $this->createOrder('paid');
+        $this->expectException(\Exception::class);
+        $this->expectExceptionCode(400);
+        $user = $this->mockUser('operations_staff');
+        $this->service->cancel($order->id, $user);
+    }
+
+    public function testCancelThrowsWhenOrderIsPaidEvenForAdmin(): void
+    {
+        $order = $this->createOrder('paid');
+        $this->expectException(\Exception::class);
+        $this->expectExceptionCode(400);
+        $user = $this->mockUser('administrator');
+        $this->service->cancel($order->id, $user);
+    }
+
+    public function testCancelSucceedsForPendingPaymentOrder(): void
+    {
+        $order = $this->createOrder('pending_payment');
+        $user = $this->mockUser('administrator');
+        $result = $this->service->cancel($order->id, $user);
+        $this->assertEquals('canceled', $result['state']);
+    }
+
     // ------------------------------------------------------------------
     // refund()
     // ------------------------------------------------------------------

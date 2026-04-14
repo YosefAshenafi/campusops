@@ -35,7 +35,7 @@ class DatabaseSeeder extends Seeder
                 'permissions' => json_encode([
                     'activities.read', 'activities.create', 'activities.update',
                     'activities.publish', 'activities.transition', 'activities.signup',
-                    'orders.read', 'orders.create', 'orders.update',
+                    'orders.read', 'orders.create', 'orders.update', 'orders.request_correction',
                     'orders.payment', 'orders.ticketing', 'orders.cancel', 'orders.close',
                     'shipments.*', 'search.read',
                     'dashboard.read', 'notifications.read', 'preferences.*',
@@ -57,7 +57,7 @@ class DatabaseSeeder extends Seeder
                 'description' => 'Approval workflows, violation appeals',
                 'permissions' => json_encode([
                     'violations.read', 'violations.review', 'violations.final_decision',
-                    'orders.read', 'orders.approve', 'audit.read',
+                    'orders.read', 'orders.approve', 'orders.request_correction', 'audit.read',
                     'dashboard.read', 'notifications.read', 'preferences.*',
                     'search.read'
                 ]),
@@ -67,7 +67,7 @@ class DatabaseSeeder extends Seeder
                 'description' => 'Browse activities, sign up, view dashboard',
                 'permissions' => json_encode([
                     'activities.read', 'activities.signup',
-                    'orders.read', 'notifications.read', 'preferences.*',
+                    'orders.read', 'orders.request_correction', 'notifications.read', 'preferences.*',
                     'dashboard.read', 'search.read',
                     'violations.appeal'
                 ]),

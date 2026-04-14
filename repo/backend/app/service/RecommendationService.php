@@ -113,17 +113,27 @@ class RecommendationService
             ->select();
 
         $results = [];
-        $familyCount = [];
-        $maxPerFamily = max(1, (int) ceil($limit * self::MAX_FAMILY_DIVERSITY_PCT));
+        $tagCounts = [];
+        $seenGroupIds = [];
+        $maxPerTag = max(1, (int) ceil($limit * self::MAX_FAMILY_DIVERSITY_PCT));
 
         foreach ($activities as $v) {
             if (count($results) >= $limit) break;
 
-            $family = $this->getActivityFamily($v);
-            if (($familyCount[$family] ?? 0) >= $maxPerFamily) {
+            // Dedup by group_id
+            if (isset($seenGroupIds[$v->group_id])) {
                 continue;
             }
-            $familyCount[$family] = ($familyCount[$family] ?? 0) + 1;
+
+            $tags = json_decode($v->tags, true) ?: [];
+
+            // Per-tag 40% diversity cap
+            if (!empty($tags) && $this->exceedsTagDiversityCap($tags, $tagCounts, $maxPerTag)) {
+                continue;
+            }
+
+            $this->incrementTagCounts($tags, $tagCounts);
+            $seenGroupIds[$v->group_id] = true;
 
             $signupCount = ActivitySignup::where('group_id', $v->group_id)
                 ->whereIn('status', ['confirmed', 'pending_acknowledgement'])
@@ -132,7 +142,7 @@ class RecommendationService
             $results[] = [
                 'id' => $v->group_id,
                 'title' => $v->title,
-                'tags' => json_decode($v->tags, true) ?: [],
+                'tags' => $tags,
                 'signup_count' => $signupCount,
                 'published_at' => $v->published_at,
             ];
@@ -230,12 +240,17 @@ class RecommendationService
                 ->select();
         }
 
-        $seen = [];
+        $seenOrderIds = [];
+        $seenActivityIds = [];
         $results = [];
         foreach ($candidates as $o) {
             if (count($results) >= $limit) break;
-            if (isset($seen[$o->id])) continue;
-            $seen[$o->id] = true;
+            // Dedup by order id
+            if (isset($seenOrderIds[$o->id])) continue;
+            // Dedup by order-family (activity_id) — at most one order per activity
+            if (isset($seenActivityIds[$o->activity_id])) continue;
+            $seenOrderIds[$o->id] = true;
+            $seenActivityIds[$o->activity_id] = true;
             $results[] = [
                 'id' => $o->id,
                 'activity_id' => $o->activity_id,

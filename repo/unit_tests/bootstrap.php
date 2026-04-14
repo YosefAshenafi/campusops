@@ -87,6 +87,9 @@ $tables = [
         eligibility_tags TEXT NOT NULL DEFAULT '[]',
         required_supplies TEXT NOT NULL DEFAULT '[]',
         published_at TEXT DEFAULT NULL,
+        started_at TEXT DEFAULT NULL,
+        completed_at TEXT DEFAULT NULL,
+        archived_at TEXT DEFAULT NULL,
         created_at TEXT DEFAULT NULL,
         updated_at TEXT DEFAULT NULL
     )",
@@ -229,19 +232,24 @@ $tables = [
     )",
     "CREATE TABLE IF NOT EXISTS file_uploads (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
-        filename TEXT DEFAULT '',
-        sha256 TEXT DEFAULT '',
-        file_path TEXT DEFAULT '',
-        created_at TEXT DEFAULT NULL,
-        updated_at TEXT DEFAULT NULL
+        uploaded_by INTEGER NOT NULL DEFAULT 0,
+        filename TEXT NOT NULL DEFAULT '',
+        original_name TEXT NOT NULL DEFAULT '',
+        sha256 TEXT NOT NULL DEFAULT '',
+        file_path TEXT NOT NULL DEFAULT '',
+        size INTEGER NOT NULL DEFAULT 0,
+        category TEXT DEFAULT NULL,
+        created_at TEXT DEFAULT NULL
     )",
     "CREATE TABLE IF NOT EXISTS shipments (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         order_id INTEGER NOT NULL DEFAULT 0,
-        tracking_number TEXT DEFAULT '',
-        status TEXT DEFAULT 'pending',
-        created_at TEXT DEFAULT NULL,
-        updated_at TEXT DEFAULT NULL
+        carrier TEXT DEFAULT NULL,
+        tracking_number TEXT DEFAULT NULL,
+        package_contents TEXT DEFAULT NULL,
+        weight REAL DEFAULT NULL,
+        status TEXT NOT NULL DEFAULT 'created',
+        created_at TEXT DEFAULT NULL
     )",
     "CREATE TABLE IF NOT EXISTS tasks (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -279,6 +287,40 @@ $tables = [
         assigned_users TEXT NOT NULL DEFAULT '[]',
         notes TEXT DEFAULT '',
         created_by INTEGER NOT NULL DEFAULT 0,
+        created_at TEXT DEFAULT NULL,
+        updated_at TEXT DEFAULT NULL
+    )",
+    "CREATE TABLE IF NOT EXISTS scan_events (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        shipment_id INTEGER NOT NULL DEFAULT 0,
+        scan_code TEXT DEFAULT '',
+        location TEXT DEFAULT 'unknown',
+        scanned_by INTEGER NOT NULL DEFAULT 0,
+        result TEXT DEFAULT 'scanned',
+        created_at TEXT DEFAULT NULL,
+        updated_at TEXT DEFAULT NULL
+    )",
+    "CREATE TABLE IF NOT EXISTS shipment_exceptions (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        shipment_id INTEGER NOT NULL DEFAULT 0,
+        description TEXT DEFAULT '',
+        reported_by INTEGER NOT NULL DEFAULT 0,
+        created_at TEXT DEFAULT NULL,
+        updated_at TEXT DEFAULT NULL
+    )",
+    "CREATE TABLE IF NOT EXISTS dashboards (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        user_id INTEGER NOT NULL DEFAULT 0,
+        name TEXT NOT NULL DEFAULT '',
+        widgets TEXT DEFAULT '[]',
+        is_default INTEGER NOT NULL DEFAULT 0,
+        created_at TEXT DEFAULT NULL,
+        updated_at TEXT DEFAULT NULL
+    )",
+    "CREATE TABLE IF NOT EXISTS dashboard_favorites (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        user_id INTEGER NOT NULL DEFAULT 0,
+        widget_id TEXT NOT NULL DEFAULT '',
         created_at TEXT DEFAULT NULL,
         updated_at TEXT DEFAULT NULL
     )",

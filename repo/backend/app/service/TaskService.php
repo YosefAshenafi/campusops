@@ -26,6 +26,8 @@ class TaskService
      */
     public function createTask(int $activityId, array $data, $currentUser): array
     {
+        $this->assertActivityAccess($activityId, $currentUser);
+
         if (empty($data['title'])) {
             throw new \Exception('Title is required', 400);
         }

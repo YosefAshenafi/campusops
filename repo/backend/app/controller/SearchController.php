@@ -68,7 +68,10 @@ class SearchController
         $limit = (int) $request->get('limit', 20);
         $sort = $request->get('sort', 'recency');
 
-        $result = $this->searchService->searchLogistics($query, $page, $limit, $sort);
+        $status = $request->get('status', '');
+        $carrier = $request->get('carrier', '');
+
+        $result = $this->searchService->searchLogistics($query, $page, $limit, $sort, $status, $carrier);
 
         return json(['success' => true, 'code' => 200, 'data' => $result]);
     }

@@ -317,6 +317,11 @@ class OrderService
             throw new \Exception('Cannot cancel ' . $order->state . ' order', 400);
         }
 
+        // Paid orders can only be refunded by an Administrator — block the cancel path
+        if ($order->state === self::STATE_PAID) {
+            throw new \Exception('Paid orders cannot be canceled. Use the refund endpoint (administrator only)', 400);
+        }
+
         $previousState = $order->state;
         $order->state = self::STATE_CANCELED;
         $order->save();

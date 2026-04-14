@@ -15,6 +15,8 @@ class StaffingService
 
     public function createStaffing(int $activityId, array $data, $currentUser): array
     {
+        $this->assertActivityAccess($activityId, $currentUser);
+
         if (empty($data['role'])) {
             throw new \Exception('Role is required', 400);
         }

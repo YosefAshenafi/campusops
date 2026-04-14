@@ -174,6 +174,20 @@ layui.define(['jquery', 'layer', 'form', 'common'], function (exports) {
 
             $('#activity-state-badge').html(that.getStateBadge(activity.state));
 
+            // Eligibility tags
+            var eligibilityTags = activity.eligibility_tags || [];
+            if (eligibilityTags.length > 0) {
+                $('#detail-eligibility-tags').html(this.renderTags(eligibilityTags));
+            } else {
+                $('#detail-eligibility-tags').html('<span style="color:#999;">No eligibility restrictions</span>');
+            }
+
+            // Lifecycle transition timestamps
+            $('#ts-published').text(activity.published_at ? common.formatDateTime(activity.published_at) : '-');
+            $('#ts-started').text(activity.started_at ? common.formatDateTime(activity.started_at) : '-');
+            $('#ts-completed').text(activity.completed_at ? common.formatDateTime(activity.completed_at) : '-');
+            $('#ts-archived').text(activity.archived_at ? common.formatDateTime(activity.archived_at) : '-');
+
             this.loadSignups(activity.id);
             this.renderActions(activity.state, activity.current_signups, activity.max_headcount);
         },

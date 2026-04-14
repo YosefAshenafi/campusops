@@ -57,6 +57,24 @@
                                     <div id="detail-supplies"></div>
                                 </div>
                             </div>
+                            <div class="layui-form-item">
+                                <label class="layui-form-label">Eligibility</label>
+                                <div class="layui-input-block">
+                                    <div id="detail-eligibility-tags"></div>
+                                </div>
+                            </div>
+                            <hr style="border-color: #f0f0f0;">
+                            <div class="layui-form-item">
+                                <label class="layui-form-label">Lifecycle</label>
+                                <div class="layui-input-block">
+                                    <div id="detail-lifecycle-timestamps" style="line-height: 2;">
+                                        <div><strong>Published:</strong> <span id="ts-published">-</span></div>
+                                        <div><strong>Started:</strong> <span id="ts-started">-</span></div>
+                                        <div><strong>Completed:</strong> <span id="ts-completed">-</span></div>
+                                        <div><strong>Archived:</strong> <span id="ts-archived">-</span></div>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                         <div class="layui-tab-item">
                             <div id="detail-signups"></div>
@@ -75,4 +93,18 @@
             </div>
         </div>
     </div>
+
+    <!-- Recommendations widget -->
+    <div class="layui-card" style="margin-top: 15px;">
+        <div class="layui-card-header">
+            <span style="font-size: 16px; font-weight: 600;">Recommended Activities</span>
+        </div>
+        <div class="layui-card-body" id="activity-recommendations"></div>
+    </div>
 </div>
+
+<script>
+layui.use('recommendations', function() {
+    layui.recommendations.load('activity-recommendations', 'detail', 5);
+});
+</script>

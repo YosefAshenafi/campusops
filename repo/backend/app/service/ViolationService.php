@@ -256,6 +256,13 @@ class ViolationService
             throw new \Exception('Violation not found', 404);
         }
 
+        // Object-level authorization: only the violation subject or privileged roles may appeal
+        if (!in_array($currentUser->role, ['administrator', 'reviewer'])) {
+            if ($violation->user_id != $currentUser->id) {
+                throw new \Exception('Access denied: you can only appeal your own violations', 403);
+            }
+        }
+
         $appeal = new ViolationAppeal();
         $appeal->violation_id = $violationId;
         $appeal->appellant_notes = $data['notes'] ?? '';

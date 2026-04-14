@@ -22,7 +22,7 @@ class ChecklistService
                 'id' => $cl->id,
                 'activity_id' => $cl->activity_id,
                 'title' => $cl->title,
-                'items' => array_map(fn($i) => $this->formatItem($i), $items),
+                'items' => array_map(fn($i) => $this->formatItem($i), $items->all()),
                 'created_at' => $cl->created_at,
             ];
         }
@@ -35,6 +35,8 @@ class ChecklistService
      */
     public function createChecklist(int $activityId, array $data, $currentUser): array
     {
+        $this->assertActivityAccess($activityId, $currentUser);
+
         if (empty($data['title'])) {
             throw new \Exception('Title is required', 400);
         }
@@ -117,6 +119,13 @@ class ChecklistService
             throw new \Exception('Item not found', 404);
         }
 
+        // Object-level authorization: resolve checklist -> activity and enforce access
+        $checklist = Checklist::find($checklistId);
+        if (!$checklist) {
+            throw new \Exception('Checklist not found', 404);
+        }
+        $this->assertActivityAccess($checklist->activity_id, $currentUser);
+
         $item->completed = !$item->completed;
         if ($item->completed) {
             $item->completed_by = $currentUser->id;
@@ -137,7 +146,7 @@ class ChecklistService
             'id' => $cl->id,
             'activity_id' => $cl->activity_id,
             'title' => $cl->title,
-            'items' => array_map(fn($i) => $this->formatItem($i), $items),
+            'items' => array_map(fn($i) => $this->formatItem($i), $items->all()),
             'created_at' => $cl->created_at,
         ];
     }

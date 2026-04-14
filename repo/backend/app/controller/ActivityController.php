@@ -84,7 +84,7 @@ class ActivityController
     public function signups(Request $request, int $id): Response
     {
         try {
-            $signups = $this->activityService->getSignups($id);
+            $signups = $this->activityService->getSignups($id, $request->user->id, $request->user->role);
             return json([
                 'success' => true,
                 'code' => 200,

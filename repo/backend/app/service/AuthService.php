@@ -18,28 +18,28 @@ class AuthService
         $user = User::where('username', $username)->find();
 
         if (!$user) {
-            \think\facade\Log::warning("Auth failure: unknown username '{$username}'");
+            \think\facade\Log::warning("Auth failure: unknown username attempt");
             throw new \Exception('Invalid credentials', 401);
         }
 
         if ($user->status === 'disabled') {
-            \think\facade\Log::warning("Auth failure: disabled account for user {$user->id} ({$username})");
+            \think\facade\Log::warning("Auth failure: disabled account for user_id {$user->id}");
             throw new \Exception('Account is disabled', 403);
         }
 
         if ($user->isLocked()) {
             $remaining = strtotime($user->locked_until) - time();
             $minutes = ceil($remaining / 60);
-            \think\facade\Log::warning("Auth failure: locked account for user {$user->id} ({$username})");
+            \think\facade\Log::warning("Auth failure: locked account for user_id {$user->id}");
             throw new \Exception("Account locked. Try again in {$minutes} minute(s)", 429);
         }
 
         if (!$user->verifyPassword($password)) {
             $user->recordFailedAttempt();
-            \think\facade\Log::warning("Auth failure: bad password for user {$user->id} ({$username}), attempts: {$user->failed_attempts}");
+            \think\facade\Log::warning("Auth failure: bad password for user_id {$user->id}, attempts: {$user->failed_attempts}");
 
             if ($user->isLocked()) {
-                \think\facade\Log::error("Auth lockout: user {$user->id} ({$username}) locked after 5 failed attempts");
+                \think\facade\Log::error("Auth lockout: user_id {$user->id} locked after 5 failed attempts");
                 throw new \Exception('Account locked after 5 failed attempts. Try again in 15 minutes', 429);
             }
 
@@ -49,7 +49,7 @@ class AuthService
 
         // Successful login
         $user->resetFailedAttempts();
-        \think\facade\Log::info("Auth success: user {$user->id} ({$username}) logged in");
+        \think\facade\Log::info("Auth success: user_id {$user->id} logged in");
 
         // Create session
         $session = Session::createForUser($user->id);

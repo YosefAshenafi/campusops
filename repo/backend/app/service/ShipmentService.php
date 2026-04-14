@@ -6,6 +6,9 @@ use app\model\Shipment;
 use app\model\ScanEvent;
 use app\model\ShipmentException;
 use app\model\Order;
+use app\service\NotificationService;
+
+class ShipmentService
 {
     const STATUS_CREATED = 'created';
     const STATUS_IN_TRANSIT = 'in_transit';

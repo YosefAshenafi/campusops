@@ -278,6 +278,29 @@ class ViolationServiceTest extends TestCase
         $this->assertEquals('I disagree', $appeal->appellant_notes);
     }
 
+    public function testSubmitAppealThrows403ForNonOwner(): void
+    {
+        $violation = $this->createViolation(5);
+        // User 6 tries to appeal user 5's violation
+        $user = $this->mockUser('regular_user', 6);
+
+        $this->expectException(\Exception::class);
+        $this->expectExceptionCode(403);
+
+        $this->service->submitAppeal($violation->id, ['notes' => 'not my violation'], $user);
+    }
+
+    public function testSubmitAppealSucceedsForAdmin(): void
+    {
+        $violation = $this->createViolation(5);
+        $admin = $this->mockUser('administrator', 1);
+
+        $this->service->submitAppeal($violation->id, ['notes' => 'admin override'], $admin);
+
+        $updated = Violation::find($violation->id);
+        $this->assertEquals(ViolationService::STATUS_UNDER_REVIEW, $updated->status);
+    }
+
     public function testReviewAppealSetsReviewerInfo(): void
     {
         $violation = $this->createViolation(5);

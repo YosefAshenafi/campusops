@@ -43,4 +43,18 @@ layui.use('orders', function() {
             <div id="orders-pagination"></div>
         </div>
     </div>
+
+    <!-- Recommended activities for ordering -->
+    <div class="layui-card" style="margin-top: 15px;">
+        <div class="layui-card-header">
+            <span style="font-size: 16px; font-weight: 600;">Recommended Activities</span>
+        </div>
+        <div class="layui-card-body" id="order-list-recommendations"></div>
+    </div>
 </div>
+
+<script>
+layui.use('recommendations', function() {
+    layui.recommendations.loadPopular('order-list-recommendations', 5);
+});
+</script>

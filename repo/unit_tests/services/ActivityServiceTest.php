@@ -335,6 +335,22 @@ class ActivityServiceTest extends TestCase
         $this->assertEquals(ActivityService::STATE_ARCHIVED, $result['state']);
     }
 
+    public function testUpdateArchivedActivityCreatesNewVersion(): void
+    {
+        $user = $this->mockUser();
+        $created = $this->service->createActivity(['title' => 'unit-test-archive-update'], $user);
+        $this->service->publishActivity($created['id'], $user);
+        $this->service->startActivity($created['id'], $user);
+        $this->service->completeActivity($created['id'], $user);
+        $this->service->archiveActivity($created['id'], $user);
+
+        $updated = $this->service->updateActivity($created['id'], ['title' => 'unit-test-archive-v2'], $user);
+
+        $this->assertEquals('unit-test-archive-v2', $updated['title']);
+        $this->assertEquals(2, $updated['version_number']);
+        $this->assertEquals(ActivityService::STATE_DRAFT, $updated['state']);
+    }
+
     // ------------------------------------------------------------------
     // getVersions / getChangeLog
     // ------------------------------------------------------------------

@@ -108,7 +108,7 @@ class SearchService
     /**
      * Logistics-specific search with tracking number tokenization and synonym handling.
      */
-    public function searchLogistics(string $query, int $page = 1, int $limit = 20, string $sort = 'recency'): array
+    public function searchLogistics(string $query, int $page = 1, int $limit = 20, string $sort = 'recency', string $status = '', string $carrier = ''): array
     {
         // Normalize tracking number: strip spaces/dashes for fuzzy match
         $tokenized = preg_replace('/[\s\-]/', '', $query);
@@ -141,9 +141,23 @@ class SearchService
                 }
             });
 
+        // Additional logistics filters
+        if (!empty($status)) {
+            $queryBuilder->where('body', 'like', "%{$status}%");
+        }
+        if (!empty($carrier)) {
+            $queryBuilder->where('body', 'like', "%{$carrier}%");
+        }
+
         switch ($sort) {
             case 'recency':
                 $queryBuilder->order('updated_at', 'desc');
+                break;
+            case 'popularity':
+                $queryBuilder->order('view_count', 'desc');
+                break;
+            case 'tracking':
+                $queryBuilder->order('title', 'asc');
                 break;
             case 'relevance':
             default:
@@ -342,10 +356,10 @@ class SearchService
         return [
             'id' => $r->entity_id,
             'type' => $r->entity_type,
-            'title' => $r->title,
-            'body' => mb_substr($r->body, 0, 200),
-            'tags' => json_decode($r->tags, true) ?: [],
-            'author' => $r->author ?? '',
+            'title' => htmlspecialchars($r->title, ENT_QUOTES, 'UTF-8'),
+            'body' => htmlspecialchars(mb_substr($r->body, 0, 200), ENT_QUOTES, 'UTF-8'),
+            'tags' => array_map(fn($t) => htmlspecialchars($t, ENT_QUOTES, 'UTF-8'), json_decode($r->tags, true) ?: []),
+            'author' => htmlspecialchars($r->author ?? '', ENT_QUOTES, 'UTF-8'),
             'view_count' => (int) ($r->view_count ?? 0),
             'reply_count' => (int) ($r->reply_count ?? 0),
             'url' => $this->getUrl($r->entity_type, $r->entity_id),
@@ -360,23 +374,24 @@ class SearchService
     {
         $highlights = [];
         $escapedQuery = preg_quote($query, '/');
+        $esc = fn($s) => htmlspecialchars($s, ENT_QUOTES, 'UTF-8');
 
         if (preg_match("/(.{0,40})({$escapedQuery})(.{0,40})/i", $r->title, $m)) {
-            $highlights['title'] = $m[1] . '<em>' . $m[2] . '</em>' . $m[3];
+            $highlights['title'] = $esc($m[1]) . '<em>' . $esc($m[2]) . '</em>' . $esc($m[3]);
         }
 
         if (preg_match("/(.{0,60})({$escapedQuery})(.{0,60})/i", $r->body, $m)) {
-            $highlights['body'] = '...' . $m[1] . '<em>' . $m[2] . '</em>' . $m[3] . '...';
+            $highlights['body'] = '...' . $esc($m[1]) . '<em>' . $esc($m[2]) . '</em>' . $esc($m[3]) . '...';
         }
 
         if (!empty($r->author) && stripos($r->author, $query) !== false) {
-            $highlights['author'] = preg_replace("/({$escapedQuery})/i", '<em>$1</em>', htmlspecialchars($r->author));
+            $highlights['author'] = preg_replace("/({$escapedQuery})/i", '<em>$1</em>', $esc($r->author));
         }
 
         $tags = json_decode($r->tags, true) ?: [];
         $matchedTags = array_filter($tags, fn($t) => stripos($t, $query) !== false);
         if (!empty($matchedTags)) {
-            $highlights['tags'] = array_values($matchedTags);
+            $highlights['tags'] = array_map($esc, array_values($matchedTags));
         }
 
         return $highlights;

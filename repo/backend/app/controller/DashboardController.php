@@ -46,6 +46,12 @@ class DashboardController
         }
     }
 
+    public function deleteCustom(Request $request): Response
+    {
+        $this->dashboardService->deleteCustom($request->user->id);
+        return json(['success' => true, 'code' => 200, 'data' => null]);
+    }
+
     public function favorites(Request $request): Response
     {
         $data = $this->dashboardService->getFavorites($request->user->id);
@@ -78,6 +84,7 @@ class DashboardController
     public function snapshot(Request $request): Response
     {
         $exportService = new ExportService();
+        $format = $request->get('format', 'png');
         $dashData = $this->dashboardService->getDefault($request->user->id);
         $widgets = $dashData['widgets'];
 
@@ -93,13 +100,27 @@ class DashboardController
             }
         }
 
-        $filepath = $exportService->exportToPng($flatData, 'dashboard_snapshot', $request->user->id);
+        switch ($format) {
+            case 'pdf':
+                $filepath = $exportService->exportToPdf($flatData, 'dashboard_snapshot', $request->user->id);
+                break;
+            case 'xlsx':
+            case 'excel':
+                $excelData = array_map(fn($k, $v) => [$k, $v], array_keys($flatData), array_values($flatData));
+                $filepath = $exportService->exportToExcel($excelData, 'dashboard_snapshot', $request->user->id);
+                break;
+            case 'png':
+            default:
+                $filepath = $exportService->exportToPng($flatData, 'dashboard_snapshot', $request->user->id);
+                break;
+        }
 
         return json([
             'success' => true,
             'code' => 200,
             'data' => [
                 'file' => basename($filepath),
+                'format' => $format,
                 'download_url' => '/api/v1/export/download?file=' . urlencode(basename($filepath)),
             ],
         ]);

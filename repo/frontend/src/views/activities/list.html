@@ -62,4 +62,18 @@ layui.use('activities', function() {
             <div id="activities-pagination"></div>
         </div>
     </div>
+
+    <!-- Recommendations widget -->
+    <div class="layui-card" style="margin-top: 15px;">
+        <div class="layui-card-header">
+            <span style="font-size: 16px; font-weight: 600;">Popular Activities</span>
+        </div>
+        <div class="layui-card-body" id="activity-list-recommendations"></div>
+    </div>
 </div>
+
+<script>
+layui.use('recommendations', function() {
+    layui.recommendations.loadPopular('activity-list-recommendations', 5);
+});
+</script>

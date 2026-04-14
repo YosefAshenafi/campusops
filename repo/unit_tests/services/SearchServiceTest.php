@@ -281,4 +281,56 @@ class SearchServiceTest extends TestCase
         // With empty dictionary, should return null
         $this->assertTrue($result === null || is_string($result));
     }
+
+    // ------------------------------------------------------------------
+    // XSS / output escaping
+    // ------------------------------------------------------------------
+
+    public function testSearchResultsEscapeHtmlInTitleAndBody(): void
+    {
+        $xssPayload = '<script>alert("xss")</script>';
+        $this->service->index('activity', 99999, $xssPayload, $xssPayload, []);
+
+        $result = $this->service->search($xssPayload, '', 1, 20, 'relevance', false);
+        $matching = array_filter($result['list'], fn($r) => $r['id'] === 99999);
+        if (!empty($matching)) {
+            $row = array_values($matching)[0];
+            $this->assertStringNotContainsString('<script>', $row['title']);
+            $this->assertStringNotContainsString('<script>', $row['body']);
+            $this->assertStringContainsString('&lt;script&gt;', $row['title']);
+        }
+    }
+
+    public function testHighlightsEscapeHtmlContent(): void
+    {
+        $xssTitle = '<img onerror="alert(1)" src=x>test-xss-highlight';
+        $this->service->index('activity', 99999, $xssTitle, 'body with ' . $xssTitle, []);
+
+        $result = $this->service->search('test-xss-highlight', '', 1, 20, 'relevance', true);
+        $matching = array_filter($result['list'], fn($r) => $r['id'] === 99999);
+        if (!empty($matching)) {
+            $row = array_values($matching)[0];
+            if (isset($row['highlights']['title'])) {
+                $this->assertStringNotContainsString('<img', $row['highlights']['title']);
+            }
+        }
+    }
+
+    // ------------------------------------------------------------------
+    // Logistics search sort/filter
+    // ------------------------------------------------------------------
+
+    public function testSearchLogisticsSortsByPopularity(): void
+    {
+        $this->service->index('order', 99999, 'search-test-logistics-pop', 'tracking', [], '', 100, 0);
+
+        $result = $this->service->searchLogistics('search-test-logistics-pop', 1, 20, 'popularity');
+        $this->assertEquals('popularity', $result['sort']);
+    }
+
+    public function testSearchLogisticsSortsByTracking(): void
+    {
+        $result = $this->service->searchLogistics('anything', 1, 20, 'tracking');
+        $this->assertEquals('tracking', $result['sort']);
+    }
 }
