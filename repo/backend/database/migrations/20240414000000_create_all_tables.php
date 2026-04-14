@@ -7,6 +7,10 @@ class CreateAllTables extends Migrator
 {
     public function up()
     {
+        // Deprecated monolithic migration kept for history only.
+        // The schema is now managed by the granular 20260414* migrations.
+        return;
+
         // Users table
         $this->table('users', [
             'id' => false,
@@ -509,6 +513,9 @@ class CreateAllTables extends Migrator
 
     public function down()
     {
+        // Do not rollback via this deprecated migration.
+        return;
+
         $this->dropTable('file_uploads');
         $this->dropTable('audit_trail');
         $this->dropTable('user_preferences');

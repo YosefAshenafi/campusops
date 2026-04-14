@@ -446,17 +446,17 @@ INSERT INTO `roles` (`name`, `description`, `permissions`, `created_at`) VALUES
 ('reviewer', 'Review violations and appeals', '["violations.review","violations.read","audit.read"]', NOW()),
 ('regular_user', 'Basic user access', '["activities.read","activities.signup","orders.read","notifications.read"]', NOW());
 
--- Users (passwords use salt+hash, all can login with Password123)
+-- Users (password: Password123 for all)
 INSERT INTO `users` (`username`, `password_hash`, `salt`, `role`, `status`, `created_at`, `updated_at`) VALUES
-('admin', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llCpeg/fuFVXXXXX', 'adminsalt1234', 'administrator', 'active', NOW(), NOW()),
-('ops1', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llCpeg/fuFVXXXXX', 'ops1salt1234', 'operations_staff', 'active', NOW(), NOW()),
-('lead1', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llCpeg/fuFVXXXXX', 'lead1salt1234', 'team_lead', 'active', NOW(), NOW()),
-('reviewer1', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llCpeg/fuFVXXXXX', 'rev1salt1234', 'reviewer', 'active', NOW(), NOW()),
-('user1', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llCpeg/fuFVXXXXX', 'usr1salt1234', 'regular_user', 'active', NOW(), NOW()),
-('user2', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llCpeg/fuFVXXXXX', 'usr2salt1234', 'regular_user', 'active', NOW(), NOW()),
-('user3', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llCpeg/fuFVXXXXX', 'usr3salt1234', 'regular_user', 'active', NOW(), NOW()),
-('user4', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llCpeg/fuFVXXXXX', 'usr4salt1234', 'regular_user', 'active', NOW(), NOW()),
-('user5', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llCpeg/fuFVXXXXX', 'usr5salt1234', 'regular_user', 'active', NOW(), NOW());
+('admin', '$2y$12$woAtiKC.ZLWJphXjJlXQO.Zf30dNprLM9C3iStOhiMTReW.cIT27y', 'adminsalt1234', 'administrator', 'active', NOW(), NOW()),
+('ops1', '$2y$12$woAtiKC.ZLWJphXjJlXQO.Zf30dNprLM9C3iStOhiMTReW.cIT27y', 'ops1salt1234', 'operations_staff', 'active', NOW(), NOW()),
+('lead1', '$2y$12$woAtiKC.ZLWJphXjJlXQO.Zf30dNprLM9C3iStOhiMTReW.cIT27y', 'lead1salt1234', 'team_lead', 'active', NOW(), NOW()),
+('reviewer1', '$2y$12$woAtiKC.ZLWJphXjJlXQO.Zf30dNprLM9C3iStOhiMTReW.cIT27y', 'rev1salt1234', 'reviewer', 'active', NOW(), NOW()),
+('user1', '$2y$12$woAtiKC.ZLWJphXjJlXQO.Zf30dNprLM9C3iStOhiMTReW.cIT27y', 'usr1salt1234', 'regular_user', 'active', NOW(), NOW()),
+('user2', '$2y$12$woAtiKC.ZLWJphXjJlXQO.Zf30dNprLM9C3iStOhiMTReW.cIT27y', 'usr2salt1234', 'regular_user', 'active', NOW(), NOW()),
+('user3', '$2y$12$woAtiKC.ZLWJphXjJlXQO.Zf30dNprLM9C3iStOhiMTReW.cIT27y', 'usr3salt1234', 'regular_user', 'active', NOW(), NOW()),
+('user4', '$2y$12$woAtiKC.ZLWJphXjJlXQO.Zf30dNprLM9C3iStOhiMTReW.cIT27y', 'usr4salt1234', 'regular_user', 'active', NOW(), NOW()),
+('user5', '$2y$12$woAtiKC.ZLWJphXjJlXQO.Zf30dNprLM9C3iStOhiMTReW.cIT27y', 'usr5salt1234', 'regular_user', 'active', NOW(), NOW());
 
 -- Violation Rules
 INSERT INTO `violation_rules` (`name`, `description`, `points`, `category`, `created_at`, `updated_at`) VALUES
