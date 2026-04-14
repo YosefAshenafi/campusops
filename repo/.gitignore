@@ -1,0 +1,28 @@
+# Dependencies
+backend/vendor/
+frontend/node_modules/
+
+# Runtime
+backend/runtime/
+
+# Environment
+.env
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Docker volumes
+mysql_data/
+
+# Uploads
+backend/uploads/
+
+# Logs
+*.log

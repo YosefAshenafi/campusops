@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CampusOps</title>
+    <link rel="stylesheet" href="/src/lib/layui/css/layui.css">
+    <link rel="stylesheet" href="/src/assets/css/app.css">
+</head>
+<body class="layui-layout-body">
+    <div class="layui-layout layui-layout-admin">
+
+        <!-- Header -->
+        <div class="layui-header">
+            <div class="layui-logo">
+                <span class="logo-text">CampusOps</span>
+            </div>
+            <ul class="layui-nav layui-layout-right">
+                <li class="layui-nav-item">
+                    <a href="javascript:;" id="nav-user">
+                        <i class="layui-icon layui-icon-username"></i>
+                        <span id="header-username">User</span>
+                    </a>
+                    <dl class="layui-nav-child">
+                        <dd><a href="javascript:;" id="btn-logout">Logout</a></dd>
+                    </dl>
+                </li>
+            </ul>
+        </div>
+
+        <!-- Sidebar -->
+        <div class="layui-side layui-bg-black">
+            <div class="layui-side-scroll">
+                <ul class="layui-nav layui-nav-tree" id="sidebar-nav" lay-filter="sidebar">
+                    <!-- Navigation items populated by nav.js based on user role -->
+                </ul>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="layui-body" id="main-body">
+            <div class="app-content">
+                <!-- Content loaded dynamically -->
+                <div id="app-content-inner">
+                    <!-- Default: home view loaded here -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="layui-footer">
+            CampusOps &copy; 2026 — Unified Campus Operations &amp; Logistics Management
+        </div>
+    </div>
+
+    <script src="/src/lib/layui/layui.js"></script>
+    <script src="/src/config.js"></script>
+    <script>
+        layui.use(['element', 'layer', 'jquery'], function () {
+            var element = layui.element;
+            var layer = layui.layer;
+            var $ = layui.jquery;
+
+            // Check authentication
+            var token = localStorage.getItem('campusops_token');
+            if (!token) {
+                window.location.href = '/login.html';
+                return;
+            }
+
+            // Load user info and build navigation
+            var userInfo = JSON.parse(localStorage.getItem('campusops_user') || '{}');
+            $('#header-username').text(userInfo.username || 'User');
+
+            // Build sidebar navigation based on role
+            if (typeof CampusOps !== 'undefined' && CampusOps.nav) {
+                CampusOps.nav.build(userInfo.role);
+            }
+
+            // Load default home view
+            $('#app-content-inner').load('/src/views/home.html');
+
+            // Sidebar click handler
+            element.on('nav(sidebar)', function (elem) {
+                var url = $(elem).attr('data-url');
+                if (url) {
+                    $('#app-content-inner').load(url);
+                }
+            });
+
+            // Logout
+            $('#btn-logout').on('click', function () {
+                localStorage.removeItem('campusops_token');
+                localStorage.removeItem('campusops_user');
+                window.location.href = '/login.html';
+            });
+        });
+    </script>
+</body>
+</html>

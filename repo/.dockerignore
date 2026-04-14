@@ -1,0 +1,9 @@
+.git
+.env.example
+PLAN.md
+docs/
+*.md
+backend/runtime/
+backend/vendor/
+frontend/node_modules/
+mysql_data/
