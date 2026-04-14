@@ -29,21 +29,30 @@ class ActivityService
 
     /**
      * List activities with filters.
+     * Returns exactly one row per group_id — the latest version for each activity group.
      */
     public function listActivities(int $page = 1, int $limit = 20, string $state = '', string $tag = '', string $keyword = ''): array
     {
-        $query = ActivityVersion::order('id', 'desc');
+        // Subquery: max version_number per group_id
+        $subQuery = \think\facade\Db::table('activity_versions')
+            ->field('group_id, MAX(version_number) as max_version')
+            ->group('group_id')
+            ->buildSql();
+
+        $query = ActivityVersion::alias('v')
+            ->join([$subQuery => 'latest'], 'v.group_id = latest.group_id AND v.version_number = latest.max_version')
+            ->order('v.id', 'desc');
 
         if (!empty($state)) {
-            $query->where('state', $state);
+            $query->where('v.state', $state);
         }
 
         if (!empty($tag)) {
-            $query->where('tags', 'like', "%\"{$tag}\"%");
+            $query->where('v.tags', 'like', "%\"{$tag}\"%");
         }
 
         if (!empty($keyword)) {
-            $query->where('title', 'like', "%{$keyword}%");
+            $query->where('v.title', 'like', "%{$keyword}%");
         }
 
         $total = $query->count();
@@ -65,6 +74,9 @@ class ActivityService
 
     /**
      * Get activity by ID.
+     * Returns the latest published version as the canonical public view.
+     * Falls back to the latest version if nothing has been published yet.
+     * Includes has_pending_draft: true when a newer draft exists beyond the published version.
      */
     public function getActivity(int $id): array
     {
@@ -73,11 +85,24 @@ class ActivityService
             throw new \Exception('Activity not found', 404);
         }
 
-        $version = ActivityVersion::where('group_id', $id)
+        // Latest published version is the canonical public view
+        $publishedVersion = ActivityVersion::where('group_id', $id)
+            ->where('state', self::STATE_PUBLISHED)
             ->order('version_number', 'desc')
             ->find();
 
-        return $this->formatActivity($group, $version);
+        // Fall back to latest version if nothing is published yet
+        $latestVersion = ActivityVersion::where('group_id', $id)
+            ->order('version_number', 'desc')
+            ->find();
+
+        $version = $publishedVersion ?? $latestVersion;
+
+        $data = $this->formatActivity($group, $version);
+        $data['has_pending_draft'] = $publishedVersion !== null
+            && $latestVersion->version_number > $publishedVersion->version_number;
+
+        return $data;
     }
 
     /**

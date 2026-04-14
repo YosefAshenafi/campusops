@@ -88,7 +88,7 @@ class ViolationController
         $userId = $request->get('user_id', '');
         $groupId = $request->get('group_id', '');
 
-        $result = $this->violationService->listViolations($page, $limit, $userId, $groupId);
+        $result = $this->violationService->listViolations($page, $limit, $userId, $groupId, $request->user->id, $request->user->role);
         return json(['success' => true, 'code' => 200, 'data' => $result]);
     }
 
@@ -98,7 +98,7 @@ class ViolationController
     public function show(Request $request, int $id): Response
     {
         try {
-            $violation = $this->violationService->getViolation($id);
+            $violation = $this->violationService->getViolation($id, $request->user->id, $request->user->role);
             return json(['success' => true, 'code' => 200, 'data' => $violation]);
         } catch (\Exception $e) {
             return json(['success' => false, 'code' => 404, 'error' => $e->getMessage()], 404);

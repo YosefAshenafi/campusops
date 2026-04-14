@@ -126,26 +126,32 @@ class AuthFlowTest extends TestCase
 
     public function testRoleBasedAccessInSession(): void
     {
+        // Clean up any leftovers from a previous run before creating
+        User::where('username', 'e2e-test-admin')->delete();
+
         $adminUser = new User();
         $adminUser->username = 'e2e-test-admin';
-        $adminUser->role = 'admin';
+        $adminUser->role = 'administrator';
         $adminUser->status = 'active';
-        $adminUser->setPassword('adminpass');
+        $adminUser->setPassword('adminpass123');
         $adminUser->save();
-        
+
         $clientUser = new User();
         $clientUser->username = 'e2e-test-user';
-        $clientUser->role = 'client';
+        $clientUser->role = 'regular_user';
         $clientUser->status = 'active';
-        $clientUser->setPassword('clientpass');
+        $clientUser->setPassword('clientpass123');
         $clientUser->save();
-        
-        $adminSession = $this->service->login('e2e-test-admin', 'adminpass');
-        $clientSession = $this->service->login('e2e-test-user', 'clientpass');
-        
+
+        $adminSession = $this->service->login('e2e-test-admin', 'adminpass123');
+        $clientSession = $this->service->login('e2e-test-user', 'clientpass123');
+
+        // administrator should have users.read; regular_user should not
         $this->assertTrue($adminSession['user']->hasPermission('users.read'));
         $this->assertFalse($clientSession['user']->hasPermission('users.read'));
-        
+
+        // Tear down both users created in this test
         User::where('username', 'e2e-test-admin')->delete();
+        User::where('username', 'e2e-test-user')->delete();
     }
 }

@@ -118,6 +118,17 @@ class ViolationService
             $query->where('user_id', $userId);
         }
 
+        // Filter by group: resolve group membership to user IDs
+        if (!empty($groupId)) {
+            $memberIds = UserGroupMember::where('group_id', (int) $groupId)->column('user_id');
+            if (!empty($memberIds)) {
+                $query->whereIn('user_id', $memberIds);
+            } else {
+                // No members in group — return empty result immediately
+                return ['list' => [], 'total' => 0, 'page' => $page, 'limit' => $limit];
+            }
+        }
+
         $total = $query->count();
         $violations = $query->page($page, $limit)->select();
 

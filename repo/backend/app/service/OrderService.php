@@ -42,7 +42,7 @@ class OrderService
             $query->where('activity_id', $activityId);
         }
 
-        if ($role !== 'administrator' && $role !== 'operations_staff' && $userId > 0) {
+        if ($role !== 'administrator' && $role !== 'operations_staff' && $role !== 'reviewer' && $userId > 0) {
             $query->where('created_by', $userId);
         }
 
@@ -92,7 +92,7 @@ class OrderService
             return null;
         }
 
-        if ($role !== 'administrator' && $role !== 'operations_staff' && $order->created_by !== $userId) {
+        if ($role !== 'administrator' && $role !== 'operations_staff' && $role !== 'reviewer' && $order->created_by !== $userId) {
             return null;
         }
 
@@ -436,6 +436,28 @@ class OrderService
         $this->auditService->log($reviewerId, 'order', $orderId, 'address_correction_approved', '', '', ['requested_by' => $pending['requested_by']]);
 
         return ['success' => true, 'message' => 'Address correction approved'];
+    }
+
+    /**
+     * Cancel order triggered by the system (e.g. auto-cancel cron).
+     * Uses changed_by = 0 (system actor) so the audit trail is consistent with manual cancellations.
+     */
+    public function cancelBySystem(int $orderId, string $reason): void
+    {
+        $order = Order::find($orderId);
+        if (!$order) {
+            throw new \Exception('Order not found', 404);
+        }
+
+        if ($order->state !== self::STATE_PENDING_PAYMENT) {
+            throw new \Exception('Order is not in pending_payment state', 400);
+        }
+
+        $previousState = $order->state;
+        $order->state = self::STATE_CANCELED;
+        $order->save();
+
+        $this->logStateChange($order->id, $previousState, self::STATE_CANCELED, 0, $reason);
     }
 
     /**

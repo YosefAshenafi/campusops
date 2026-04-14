@@ -17,23 +17,20 @@ class AutoCancelOrders extends Command
 
     protected function execute(Input $input, Output $output)
     {
+        $orderService = new OrderService();
+
         $orders = \app\model\Order::where('state', 'pending_payment')
             ->where('auto_cancel_at', '<=', date('Y-m-d H:i:s'))
             ->select();
 
         $count = 0;
         foreach ($orders as $order) {
-            $order->state = 'canceled';
-            $order->save();
-
-            $history = new \app\model\OrderStateHistory();
-            $history->order_id = $order->id;
-            $history->from_state = 'pending_payment';
-            $history->to_state = 'canceled';
-            $history->notes = 'Auto-cancelled: payment not received within 30 minutes';
-            $history->save();
-
-            $count++;
+            try {
+                $orderService->cancelBySystem($order->id, 'Auto-cancelled: payment not received within 30 minutes');
+                $count++;
+            } catch (\Exception $e) {
+                $output->writeln("Failed to cancel order {$order->id}: " . $e->getMessage());
+            }
         }
 
         $output->writeln("Cancelled {$count} orders.");

@@ -98,21 +98,21 @@ repo/
 ## Key Features
 
 - **Activity Lifecycle:** Draft -> Published -> In Progress -> Completed -> Archived (with versioning and change log)
-- **Order State Machine:** Placed -> Pending Payment (30-min auto-cancel) -> Paid -> Ticketing -> Ticketed -> Closed
+- **Order State Machine:** Placed -> Pending Payment (30-min auto-cancel) -> Paid -> Ticketing -> Ticketed -> Closed/Canceled
 - **Refund:** Administrator-only (explicit role enforcement)
 - **Closed-order Address Correction:** Request + Reviewer-approval workflow only
 - **Logistics:** Shipment tracking with scan events, delivery confirmation, exception reporting
 - **Violations & Appeals:** Point system with rules, multi-stage review, appeal flow
 - **Search:** Full-text + Pinyin + spell correction, sort by relevance/recency/popularity, field-level highlighting
 - **Recommendations:** Personalized with per-tag diversity cap (40%), cold-start fallback, multi-signal scoring
-- **Export:** PNG, PDF, CSV with watermarks
+- **Export:** PNG, PDF, XLSX with watermarks
 - **RBAC:** Role-based access control with object-level authorization
 - **Security:** Sensitive data masking, encrypted invoice addresses, rate limiting, account lockout
 
 ## Configuration
 
 - Backend config: `backend/config/`
-- Environment: `backend/.env` (copy from `.env.example`)
+- Environment: `backend/.env` (copy from `.env.example` in the repo root)
 - Docker: `docker-compose.yml`
 
 ## Documentation
