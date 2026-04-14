@@ -1,0 +1,30 @@
+{
+    "project_type": "Unified Campus Operations & Logistics Management Portal",
+    "frontend_language": "JavaScript",
+    "backend_language": "PHP",
+    "frontend_framework": "Layui",
+    "frontend_ui_theme": "Layui Admin UI (role-based navigation, admin-style layout)",
+    "backend_framework": "ThinkPHP",
+    "api_style": "REST-style APIs",
+    "database": "MySQL",
+    "search_engine": "Local Full-Text Search + Local Logistics Search (tokenization, optional synonym + pinyin matching, basic spell correction)",
+    "indexing": "Incremental Local Indexing (CRUD-triggered) + Nightly Cleanup Job",
+    "authentication": "Local Username/Password (salted hashing, lockout policy)",
+    "authorization": "RBAC (Role-Based Access Control)",
+    "security_features": [
+      "Offline-only authentication",
+      "Salted password hashing",
+      "Account lockout (5 failed attempts / 15 minutes)",
+      "Sensitive field masking in UI",
+      "Encryption at rest for sensitive fields",
+      "Export watermarking (username + timestamp)",
+      "SHA-256 file fingerprinting"
+    ],
+    "file_uploads": {
+      "supported_types": ["JPG", "PNG", "PDF"],
+      "max_size_mb": 10,
+      "validation": "File-type validation + SHA-256 fingerprinting"
+    },
+    "exports": ["PNG", "PDF", "Excel"],
+    "deployment": "On-Premise (Fully Offline)"
+  }
