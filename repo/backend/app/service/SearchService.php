@@ -27,21 +27,19 @@ class SearchService
         $normalized = $this->normalizeText($query);
         $pinyinSearch = PinyinService::toPinyin($query);
 
-        $where = function($q) use ($query, $normalized, $pinyinSearch) {
-            $q->whereOr(function($sq) use ($query, $normalized, $pinyinSearch) {
-                $sq->where('title', 'like', "%{$query}%");
-                $sq->whereOr('body', 'like', "%{$query}%");
-                $sq->whereOr('normalized_text', 'like', "%{$normalized}%");
-                $sq->whereOr('pinyin_text', 'like', "%{$pinyinSearch}%");
-            });
-        };
+        $queryBuilder = SearchIndex::where(function($q) use ($query, $normalized, $pinyinSearch) {
+            $q->whereOr('title', 'like', "%{$query}%");
+            $q->whereOr('body', 'like', "%{$query}%");
+            $q->whereOr('normalized_text', 'like', "%{$normalized}%");
+            $q->whereOr('pinyin_text', 'like', "%{$pinyinSearch}%");
+        });
 
         if (!empty($type)) {
-            $where->where('entity_type', $type);
+            $queryBuilder->where('entity_type', $type);
         }
 
-        $total = SearchIndex::where($where)->count();
-        $results = SearchIndex::where($where)->page($page, $limit)->select();
+        $total = $queryBuilder->count();
+        $results = $queryBuilder->page($page, $limit)->select();
 
         $list = [];
         foreach ($results as $r) {
@@ -159,16 +157,19 @@ class SearchService
     public function cleanup(): int
     {
         $count = 0;
+        $sevenDaysAgo = date('Y-m-d', strtotime('-7 days'));
 
         $activityIds = ActivityVersion::column('group_id');
         $orphans = SearchIndex::where('entity_type', 'activity')
             ->whereNotIn('entity_id', $activityIds)
+            ->where('created_at', '<', $sevenDaysAgo)
             ->delete();
         $count += $orphans;
 
         $orderIds = Order::column('id');
         $orphans = SearchIndex::where('entity_type', 'order')
             ->whereNotIn('entity_id', $orderIds)
+            ->where('created_at', '<', $sevenDaysAgo)
             ->delete();
         $count += $orphans;
 

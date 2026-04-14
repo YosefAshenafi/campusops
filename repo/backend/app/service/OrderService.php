@@ -8,6 +8,15 @@ use app\model\ActivityGroup;
 
 class OrderService
 {
+    protected AuditService $auditService;
+    protected SearchService $searchService;
+
+    public function __construct()
+    {
+        $this->auditService = new AuditService();
+        $this->searchService = new SearchService();
+    }
+
     const STATE_PLACED = 'placed';
     const STATE_PENDING_PAYMENT = 'pending_payment';
     const STATE_PAID = 'paid';
@@ -21,7 +30,7 @@ class OrderService
     /**
      * List orders with filters.
      */
-    public function listOrders(int $page = 1, int $limit = 20, string $state = '', string $activityId = ''): array
+    public function listOrders(int $page = 1, int $limit = 20, string $state = '', string $activityId = '', int $userId = 0, string $role = ''): array
     {
         $query = Order::order('id', 'desc');
 
@@ -31,6 +40,10 @@ class OrderService
 
         if (!empty($activityId)) {
             $query->where('activity_id', $activityId);
+        }
+
+        if ($role !== 'administrator' && $role !== 'operations_staff' && $userId > 0) {
+            $query->where('created_by', $userId);
         }
 
         $total = $query->count();
@@ -52,12 +65,17 @@ class OrderService
     /**
      * Get order by ID.
      */
-    public function getOrder(int $id): array
+    public function getOrder(int $id, int $userId = 0, string $role = ''): ?array
     {
         $order = Order::find($id);
         if (!$order) {
-            throw new \Exception('Order not found', 404);
+            return null;
         }
+
+        if ($role !== 'administrator' && $role !== 'operations_staff' && $order->created_by !== $userId) {
+            return null;
+        }
+
         return $this->formatOrder($order);
     }
 
@@ -106,6 +124,7 @@ class OrderService
         $order->save();
 
         $this->logStateChange($order->id, '', self::STATE_PLACED, $currentUser->id);
+        $this->searchService->index('order', $order->id, 'Order #' . $order->id, $order->notes ?: '', []);
 
         return $this->formatOrder($order);
     }
@@ -319,12 +338,73 @@ class OrderService
         }
 
         if (isset($data['invoice_address'])) {
-            $order->invoice_address = $data['invoice_address'];
+            $order->invoice_address = EncryptionService::encrypt($data['invoice_address']);
         }
 
         $order->save();
 
+        $this->auditService->log($currentUser->id, 'order', $id, 'address_update', '', '', ['method' => 'direct']);
+
         return $this->formatOrder($order);
+    }
+
+    /**
+     * Request address correction for closed order - requires reviewer approval.
+     */
+    public function requestAddressCorrection(int $orderId, array $newAddress, int $requesterId, string $requesterRole): array
+    {
+        $order = Order::find($orderId);
+        if (!$order) {
+            return ['success' => false, 'message' => 'Order not found'];
+        }
+
+        if ($order->state !== self::STATE_CLOSED) {
+            return ['success' => false, 'message' => 'Only closed orders can request address correction'];
+        }
+
+        if ($requesterRole === 'reviewer' || $requesterRole === 'administrator') {
+            $order->invoice_address = EncryptionService::encrypt(json_encode($newAddress));
+            $order->save();
+            $this->auditService->log($requesterId, 'order', $orderId, 'address_correction', '', '', ['direct_update' => true]);
+            return ['success' => true, 'message' => 'Address updated'];
+        }
+
+        $pending = [
+            'type' => 'address_correction',
+            'requested_by' => $requesterId,
+            'new_address' => $newAddress,
+            'status' => 'pending_review',
+            'created_at' => date('Y-m-d H:i:s')
+        ];
+        
+        $order->pending_address_correction = json_encode($pending);
+        $order->save();
+
+        return ['success' => true, 'message' => 'Address correction request submitted for reviewer approval'];
+    }
+
+    /**
+     * Approve address correction (reviewer only).
+     */
+    public function approveAddressCorrection(int $orderId, int $reviewerId): array
+    {
+        $order = Order::find($orderId);
+        if (!$order || !$order->pending_address_correction) {
+            return ['success' => false, 'message' => 'No pending correction'];
+        }
+
+        $pending = json_decode($order->pending_address_correction, true);
+        if (!$pending || $pending['status'] !== 'pending_review') {
+            return ['success' => false, 'message' => 'Not pending'];
+        }
+
+        $order->invoice_address = EncryptionService::encrypt(json_encode($pending['new_address']));
+        $order->pending_address_correction = null;
+        $order->save();
+
+        $this->auditService->log($reviewerId, 'order', $orderId, 'address_correction_approved', '', '', ['requested_by' => $pending['requested_by']]);
+
+        return ['success' => true, 'message' => 'Address correction approved'];
     }
 
     /**
@@ -339,6 +419,9 @@ class OrderService
         $history->changed_by = $userId;
         $history->notes = $notes;
         $history->save();
+
+        $this->auditService->log($userId, 'order', $orderId, 'state_change', $fromState, $toState, ['notes' => $notes]);
+        \think\facade\Log::info("Order {$orderId} transitioned from '{$fromState}' to '{$toState}' by user {$userId}");
     }
 
     /**
@@ -359,7 +442,7 @@ class OrderService
             'ticket_number' => $order->ticket_number,
             'auto_cancel_at' => $order->auto_cancel_at,
             'closed_at' => $order->closed_at,
-            'invoice_address' => $order->invoice_address,
+            'invoice_address' => $order->invoice_address ? EncryptionService::decrypt($order->invoice_address) : null,
             'created_at' => $order->created_at,
             'updated_at' => $order->updated_at,
         ];

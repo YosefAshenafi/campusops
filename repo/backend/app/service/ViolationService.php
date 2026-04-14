@@ -13,6 +13,13 @@ use app\model\Notification;
 
 class ViolationService
 {
+    protected AuditService $auditService;
+
+    public function __construct()
+    {
+        $this->auditService = new AuditService();
+    }
+
     const STATUS_PENDING = 'pending';
     const STATUS_APPROVED = 'approved';
     const STATUS_REJECTED = 'rejected';
@@ -155,6 +162,9 @@ class ViolationService
         $this->updateUserPoints($user);
         $this->checkAlerts($user);
 
+        $this->auditService->log($currentUser->id, 'violation', $violation->id, 'create', '', self::STATUS_PENDING, ['user_id' => $data['user_id'], 'rule_id' => $data['rule_id'], 'points' => $rule->points]);
+        \think\facade\Log::info("Violation {$violation->id} created for user {$data['user_id']} (rule: {$data['rule_id']}, points: {$rule->points}) by user {$currentUser->id}");
+
         if (!empty($data['evidence'])) {
             foreach ($data['evidence'] as $file) {
                 $evidence = new ViolationEvidence();
@@ -224,6 +234,8 @@ class ViolationService
 
         $violation->status = self::STATUS_UNDER_REVIEW;
         $violation->save();
+
+        $this->auditService->log($currentUser->id, 'violation', $violationId, 'appeal', self::STATUS_PENDING, self::STATUS_UNDER_REVIEW);
     }
 
     /**
@@ -272,6 +284,8 @@ class ViolationService
         $newStatus = $data['uphold'] ? self::STATUS_APPROVED : self::STATUS_REJECTED;
         $violation->status = $newStatus;
         $violation->save();
+
+        $this->auditService->log($currentUser->id, 'violation', $violationId, 'final_decision', self::STATUS_UNDER_REVIEW, $newStatus, ['uphold' => $data['uphold']]);
 
         if ($newStatus === self::STATUS_REJECTED) {
             $user = User::find($violation->user_id);

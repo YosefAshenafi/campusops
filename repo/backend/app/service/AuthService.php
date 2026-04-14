@@ -18,23 +18,28 @@ class AuthService
         $user = User::where('username', $username)->find();
 
         if (!$user) {
+            \think\facade\Log::warning("Auth failure: unknown username '{$username}'");
             throw new \Exception('Invalid credentials', 401);
         }
 
         if ($user->status === 'disabled') {
+            \think\facade\Log::warning("Auth failure: disabled account for user {$user->id} ({$username})");
             throw new \Exception('Account is disabled', 403);
         }
 
         if ($user->isLocked()) {
             $remaining = strtotime($user->locked_until) - time();
             $minutes = ceil($remaining / 60);
+            \think\facade\Log::warning("Auth failure: locked account for user {$user->id} ({$username})");
             throw new \Exception("Account locked. Try again in {$minutes} minute(s)", 429);
         }
 
         if (!$user->verifyPassword($password)) {
             $user->recordFailedAttempt();
+            \think\facade\Log::warning("Auth failure: bad password for user {$user->id} ({$username}), attempts: {$user->failed_attempts}");
 
             if ($user->isLocked()) {
+                \think\facade\Log::error("Auth lockout: user {$user->id} ({$username}) locked after 5 failed attempts");
                 throw new \Exception('Account locked after 5 failed attempts. Try again in 15 minutes', 429);
             }
 
@@ -44,6 +49,7 @@ class AuthService
 
         // Successful login
         $user->resetFailedAttempts();
+        \think\facade\Log::info("Auth success: user {$user->id} ({$username}) logged in");
 
         // Create session
         $session = Session::createForUser($user->id);

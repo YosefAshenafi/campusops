@@ -5,6 +5,7 @@ namespace app\service;
 use app\model\Shipment;
 use app\model\ScanEvent;
 use app\model\ShipmentException;
+use app\model\Order;
 
 class ShipmentService
 {
@@ -26,12 +27,20 @@ class ShipmentService
     /**
      * Get shipment by ID.
      */
-    public function getShipment(int $id): array
+    public function getShipment(int $id, int $userId = 0, string $role = ''): array
     {
         $shipment = Shipment::find($id);
         if (!$shipment) {
             throw new \Exception('Shipment not found', 404);
         }
+
+        if ($role !== 'administrator' && $role !== 'operations_staff') {
+            $order = Order::find($shipment->order_id);
+            if ($order && $order->created_by !== $userId) {
+                throw new \Exception('Access denied', 403);
+            }
+        }
+
         return $this->formatShipment($shipment);
     }
 

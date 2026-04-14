@@ -25,7 +25,9 @@ class OrderController
         $state = $request->get('state', '');
         $activityId = $request->get('activity_id', '');
 
-        $result = $this->orderService->listOrders($page, $limit, $state, $activityId);
+        $userId = $request->user ? $request->user->id : 0;
+        $role = $request->user ? $request->user->role : '';
+        $result = $this->orderService->listOrders($page, $limit, $state, $activityId, $userId, $role);
 
         return json([
             'success' => true,
@@ -40,7 +42,9 @@ class OrderController
     public function show(Request $request, int $id): Response
     {
         try {
-            $order = $this->orderService->getOrder($id);
+            $userId = $request->user ? $request->user->id : 0;
+            $role = $request->user ? $request->user->role : '';
+            $order = $this->orderService->getOrder($id, $userId, $role);
             return json([
                 'success' => true,
                 'code' => 200,
@@ -314,5 +318,33 @@ class OrderController
                 'error' => $e->getMessage(),
             ], $code);
         }
+    }
+
+    /**
+     * POST /api/v1/orders/:id/request-address-correction
+     */
+    public function requestAddressCorrection(Request $request, int $id): Response
+    {
+        $data = json_decode($request->getContent(), true);
+        $result = $this->orderService->requestAddressCorrection(
+            $id,
+            $data['address'] ?? [],
+            $request->user->id,
+            $request->user->role
+        );
+
+        $code = $result['success'] ? 200 : 400;
+        return json(array_merge(['code' => $code], $result), $code);
+    }
+
+    /**
+     * POST /api/v1/orders/:id/approve-address-correction
+     */
+    public function approveAddressCorrection(Request $request, int $id): Response
+    {
+        $result = $this->orderService->approveAddressCorrection($id, $request->user->id);
+
+        $code = $result['success'] ? 200 : 400;
+        return json(array_merge(['code' => $code], $result), $code);
     }
 }

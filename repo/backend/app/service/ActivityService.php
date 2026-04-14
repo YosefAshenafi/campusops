@@ -10,6 +10,15 @@ use app\model\User;
 
 class ActivityService
 {
+    protected AuditService $auditService;
+    protected SearchService $searchService;
+
+    public function __construct()
+    {
+        $this->auditService = new AuditService();
+        $this->searchService = new SearchService();
+    }
+
     const STATE_DRAFT = 'draft';
     const STATE_PUBLISHED = 'published';
     const STATE_IN_PROGRESS = 'in_progress';
@@ -151,6 +160,9 @@ class ActivityService
         $version->required_supplies = json_encode($data['required_supplies'] ?? []);
         $version->save();
 
+        $this->auditService->log($currentUser->id, 'activity', $group->id, 'create', '', 'draft', ['title' => $data['title']]);
+        $this->searchService->index('activity', $group->id, $version->title, $version->body, $data['tags'] ?? []);
+
         return $this->formatActivity($group, $version);
     }
 
@@ -182,6 +194,9 @@ class ActivityService
         if (isset($data['required_supplies'])) $currentVersion->required_supplies = json_encode($data['required_supplies']);
 
         $currentVersion->save();
+
+        $this->auditService->log($currentUser->id, 'activity', $id, 'update', '', '', ['fields' => array_keys($data)]);
+        $this->searchService->index('activity', $id, $currentVersion->title, $currentVersion->body, json_decode($currentVersion->tags, true) ?: []);
 
         return $this->formatActivity($group, $currentVersion);
     }
@@ -266,6 +281,10 @@ class ActivityService
         $version->published_at = date('Y-m-d H:i:s');
         $version->save();
 
+        $this->auditService->log($currentUser->id, 'activity', $id, 'state_change', self::STATE_DRAFT, self::STATE_PUBLISHED);
+        $this->searchService->index('activity', $id, $version->title, $version->body, json_decode($version->tags, true) ?: []);
+        \think\facade\Log::info("Activity {$id} published by user {$currentUser->id}");
+
         $group = ActivityGroup::find($id);
         return $this->formatActivity($group, $version);
     }
@@ -285,6 +304,8 @@ class ActivityService
 
         $version->state = self::STATE_IN_PROGRESS;
         $version->save();
+
+        $this->auditService->log($currentUser->id, 'activity', $id, 'state_change', self::STATE_PUBLISHED, self::STATE_IN_PROGRESS);
 
         $group = ActivityGroup::find($id);
         return $this->formatActivity($group, $version);
@@ -306,6 +327,8 @@ class ActivityService
         $version->state = self::STATE_COMPLETED;
         $version->save();
 
+        $this->auditService->log($currentUser->id, 'activity', $id, 'state_change', self::STATE_IN_PROGRESS, self::STATE_COMPLETED);
+
         $group = ActivityGroup::find($id);
         return $this->formatActivity($group, $version);
     }
@@ -325,6 +348,9 @@ class ActivityService
 
         $version->state = self::STATE_ARCHIVED;
         $version->save();
+
+        $this->auditService->log($currentUser->id, 'activity', $id, 'state_change', self::STATE_COMPLETED, self::STATE_ARCHIVED);
+        $this->searchService->remove('activity', $id);
 
         $group = ActivityGroup::find($id);
         return $this->formatActivity($group, $version);

@@ -64,11 +64,15 @@ class UploadService
     /**
      * Get file info.
      */
-    public function getFile(int $id): array
+    public function getFile(int $id, int $userId = 0, string $role = ''): array
     {
         $file = FileUpload::find($id);
         if (!$file) {
             throw new \Exception('File not found', 404);
+        }
+
+        if ($role !== 'administrator' && $role !== 'operations_staff' && $file->uploaded_by !== $userId) {
+            throw new \Exception('Access denied', 403);
         }
 
         return [
@@ -85,11 +89,15 @@ class UploadService
     /**
      * Download file.
      */
-    public function download(int $id): array
+    public function download(int $id, int $userId = 0, string $role = ''): array
     {
         $file = FileUpload::find($id);
         if (!$file || !file_exists($file->file_path)) {
             throw new \Exception('File not found', 404);
+        }
+
+        if ($role !== 'administrator' && $role !== 'operations_staff' && $file->uploaded_by !== $userId) {
+            throw new \Exception('Access denied', 403);
         }
 
         return [

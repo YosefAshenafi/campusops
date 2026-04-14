@@ -23,9 +23,10 @@ class DatabaseSeeder extends Seeder
                 'permissions' => json_encode([
                     'users.*', 'activities.*', 'orders.*', 'violations.*',
                     'search.*', 'reports.*', 'audit.*', 'settings.*',
-                    'shipments.*', 'tasks.*', 'staffing.*', 'dashboards.*',
-                    'uploads.*', 'index.*', 'notifications.*', 'preferences.*',
-                    'orders.refund', 'users.role', 'users.password'
+                    'shipments.*', 'tasks.*', 'staffing.*', 'dashboard.*',
+                    'uploads.*', 'files.*', 'index.*', 'notifications.*', 'preferences.*',
+                    'checklists.*', 'orders.refund', 'orders.approve',
+                    'users.role', 'users.password'
                 ]),
             ],
             [
@@ -33,18 +34,19 @@ class DatabaseSeeder extends Seeder
                 'description' => 'Order management, activity creation, fulfillment tracking',
                 'permissions' => json_encode([
                     'activities.read', 'activities.create', 'activities.update',
-                    'activities.publish', 'activities.start', 'activities.complete',
+                    'activities.publish', 'activities.transition', 'activities.signup',
                     'orders.*', 'shipments.*', 'search.read',
-                    'dashboards.read', 'notifications.read', 'preferences.*',
-                    'uploads.create'
+                    'dashboard.read', 'notifications.read', 'preferences.*',
+                    'uploads.create', 'files.read'
                 ]),
             ],
             [
                 'name' => 'team_lead',
                 'description' => 'Task breakdowns, staffing, checklists',
                 'permissions' => json_encode([
-                    'activities.read', 'tasks.*', 'staffing.*', 'checklists.*',
-                    'dashboards.read', 'notifications.read', 'preferences.*',
+                    'activities.read', 'activities.signup', 'tasks.*', 'staffing.*',
+                    'checklists.*',
+                    'dashboard.read', 'notifications.read', 'preferences.*',
                     'search.read'
                 ]),
             ],
@@ -53,8 +55,8 @@ class DatabaseSeeder extends Seeder
                 'description' => 'Approval workflows, violation appeals',
                 'permissions' => json_encode([
                     'violations.read', 'violations.review', 'violations.final_decision',
-                    'orders.address_update', 'audit.read',
-                    'dashboards.read', 'notifications.read', 'preferences.*',
+                    'orders.read', 'orders.approve', 'audit.read',
+                    'dashboard.read', 'notifications.read', 'preferences.*',
                     'search.read'
                 ]),
             ],
@@ -64,8 +66,8 @@ class DatabaseSeeder extends Seeder
                 'permissions' => json_encode([
                     'activities.read', 'activities.signup',
                     'orders.read', 'notifications.read', 'preferences.*',
-                    'dashboards.read', 'search.read',
-                    'violations.appeal'
+                    'dashboard.read', 'search.read',
+                    'violations.read', 'violations.appeal'
                 ]),
             ],
         ];

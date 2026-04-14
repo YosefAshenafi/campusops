@@ -20,12 +20,14 @@ Route::group('api/v1', function () {
         Route::post('auth/unlock', 'AuthController/unlock')
             ->middleware('rbac', 'users.password');
 
-        // User management routes
+        // User management routes (with sensitive data masking)
         Route::group('users', function () {
             Route::get('', 'UserController/index')
-                ->middleware('rbac', 'users.read');
+                ->middleware('rbac', 'users.read')
+                ->middleware('sensitive_data');
             Route::get('/:id', 'UserController/show')
-                ->middleware('rbac', 'users.read');
+                ->middleware('rbac', 'users.read')
+                ->middleware('sensitive_data');
             Route::post('', 'UserController/create')
                 ->middleware('rbac', 'users.create');
             Route::put('/:id', 'UserController/update')
@@ -40,12 +42,15 @@ Route::group('api/v1', function () {
 
         // Activity management routes
         Route::group('activities', function () {
-            Route::get('', 'ActivityController/index');
-            Route::get('/:id', 'ActivityController/show');
-            Route::get('/:id/versions', 'ActivityController/versions')
+            Route::get('', 'ActivityController@index')
                 ->middleware('rbac', 'activities.read');
-            Route::get('/:id/signups', 'ActivityController/signups');
-            Route::get('/:id/change-log', 'ActivityController/changeLog')
+            Route::get('/:id', 'ActivityController@show')
+                ->middleware('rbac', 'activities.read');
+            Route::get('/:id/versions', 'ActivityController@versions')
+                ->middleware('rbac', 'activities.read');
+            Route::get('/:id/signups', 'ActivityController@signups')
+                ->middleware('rbac', 'activities.read');
+            Route::get('/:id/change-log', 'ActivityController@changeLog')
                 ->middleware('rbac', 'activities.read');
             Route::post('', 'ActivityController/create')
                 ->middleware('rbac', 'activities.create');
@@ -59,16 +64,24 @@ Route::group('api/v1', function () {
                 ->middleware('rbac', 'activities.transition');
             Route::post('/:id/archive', 'ActivityController/archive')
                 ->middleware('rbac', 'activities.transition');
-            Route::post('/:id/signups', 'ActivityController/signup');
-            Route::delete('/:id/signups/:signup_id', 'ActivityController/cancelSignup');
-            Route::post('/:id/signups/:signup_id/acknowledge', 'ActivityController/acknowledge');
+            Route::post('/:id/signups', 'ActivityController/signup')
+                ->middleware('rbac', 'activities.signup');
+            Route::delete('/:id/signups/:signup_id', 'ActivityController/cancelSignup')
+                ->middleware('rbac', 'activities.signup');
+            Route::post('/:id/signups/:signup_id/acknowledge', 'ActivityController/acknowledge')
+                ->middleware('rbac', 'activities.signup');
         });
 
-        // Order management routes
+        // Order management routes (with sensitive data masking)
         Route::group('orders', function () {
-            Route::get('', 'OrderController/index');
-            Route::get('/:id', 'OrderController/show');
-            Route::get('/:id/history', 'OrderController/history');
+            Route::get('', 'OrderController@index')
+                ->middleware('rbac', 'orders.read')
+                ->middleware('sensitive_data');
+            Route::get('/:id', 'OrderController@show')
+                ->middleware('rbac', 'orders.read')
+                ->middleware('sensitive_data');
+            Route::get('/:id/history', 'OrderController@history')
+                ->middleware('rbac', 'orders.read');
             Route::post('', 'OrderController/create')
                 ->middleware('rbac', 'orders.create');
             Route::put('/:id', 'OrderController/update')
@@ -89,23 +102,32 @@ Route::group('api/v1', function () {
                 ->middleware('rbac', 'orders.close');
             Route::put('/:id/address', 'OrderController/updateAddress')
                 ->middleware('rbac', 'orders.update');
+            Route::post('/:id/request-address-correction', 'OrderController/requestAddressCorrection')
+                ->middleware('rbac', 'orders.update');
+            Route::post('/:id/approve-address-correction', 'OrderController/approveAddressCorrection')
+                ->middleware('rbac', 'orders.approve');
         });
 
         // Shipment routes
         Route::group('orders/:order_id/shipments', function () {
-            Route::get('', 'ShipmentController/index');
+            Route::get('', 'ShipmentController/index')
+                ->middleware('rbac', 'shipments.read');
             Route::post('', 'ShipmentController/create')
                 ->middleware('rbac', 'shipments.create');
         });
 
         Route::group('shipments', function () {
-            Route::get('/:id', 'ShipmentController/show');
-            Route::post('/:id/scan', 'ShipmentController/scan');
-            Route::get('/:id/scan-history', 'ShipmentController/scanHistory');
-            Route::post('/:id/confirm-delivery', 'ShipmentController/confirmDelivery')
+            Route::get('/:id', 'ShipmentController@show')
+                ->middleware('rbac', 'shipments.read');
+            Route::post('/:id/scan', 'ShipmentController@scan')
+                ->middleware('rbac', 'shipments.update');
+            Route::get('/:id/scan-history', 'ShipmentController@scanHistory')
+                ->middleware('rbac', 'shipments.read');
+            Route::post('/:id/confirm-delivery', 'ShipmentController@confirmDelivery')
                 ->middleware('rbac', 'shipments.deliver');
-            Route::get('/:id/exceptions', 'ShipmentController/exceptions');
-            Route::post('/:id/exceptions', 'ShipmentController/reportException')
+            Route::get('/:id/exceptions', 'ShipmentController@exceptions')
+                ->middleware('rbac', 'shipments.read');
+            Route::post('/:id/exceptions', 'ShipmentController@reportException')
                 ->middleware('rbac', 'shipments.exception');
         });
 
@@ -121,13 +143,18 @@ Route::group('api/v1', function () {
                 ->middleware('rbac', 'violations.rules');
             Route::delete('rules/:id', 'ViolationController/ruleDelete')
                 ->middleware('rbac', 'violations.rules');
-            Route::get('', 'ViolationController/index');
-            Route::get('/:id', 'ViolationController/show');
+            Route::get('', 'ViolationController/index')
+                ->middleware('rbac', 'violations.read');
+            Route::get('/:id', 'ViolationController/show')
+                ->middleware('rbac', 'violations.read');
             Route::post('', 'ViolationController/create')
                 ->middleware('rbac', 'violations.create');
-            Route::get('user/:user_id', 'ViolationController/userViolations');
-            Route::get('group/:group_id', 'ViolationController/groupViolations');
-            Route::post('/:id/appeal', 'ViolationController/appeal');
+            Route::get('user/:user_id', 'ViolationController/userViolations')
+                ->middleware('rbac', 'violations.read');
+            Route::get('group/:group_id', 'ViolationController/groupViolations')
+                ->middleware('rbac', 'violations.read');
+            Route::post('/:id/appeal', 'ViolationController/appeal')
+                ->middleware('rbac', 'violations.appeal');
             Route::post('/:id/review', 'ViolationController/review')
                 ->middleware('rbac', 'violations.review');
             Route::post('/:id/final-decision', 'ViolationController/finalDecision')
@@ -138,15 +165,18 @@ Route::group('api/v1', function () {
         Route::group('upload', function () {
             Route::post('', 'UploadController/upload')
                 ->middleware('rbac', 'uploads.create');
-            Route::get('/:id', 'UploadController/show');
-            Route::get('/:id/download', 'UploadController/download');
+            Route::get('/:id', 'UploadController/show')
+                ->middleware('rbac', 'files.read');
+            Route::get('/:id/download', 'UploadController/download')
+                ->middleware('rbac', 'files.read');
             Route::delete('/:id', 'UploadController/delete')
                 ->middleware('rbac', 'uploads.delete');
         });
 
         // Task routes
         Route::group('activities/:activity_id/tasks', function () {
-            Route::get('', 'TaskController/index');
+            Route::get('', 'TaskController/index')
+                ->middleware('rbac', 'tasks.read');
             Route::post('', 'TaskController/create')
                 ->middleware('rbac', 'tasks.create');
         });
@@ -154,14 +184,16 @@ Route::group('api/v1', function () {
         Route::group('tasks', function () {
             Route::put('/:id', 'TaskController/update')
                 ->middleware('rbac', 'tasks.update');
-            Route::put('/:id/status', 'TaskController/updateStatus');
+            Route::put('/:id/status', 'TaskController/updateStatus')
+                ->middleware('rbac', 'tasks.update');
             Route::delete('/:id', 'TaskController/delete')
                 ->middleware('rbac', 'tasks.delete');
         });
 
         // Checklist routes
         Route::group('activities/:activity_id/checklists', function () {
-            Route::get('', 'ChecklistController/index');
+            Route::get('', 'ChecklistController/index')
+                ->middleware('rbac', 'checklists.read');
             Route::post('', 'ChecklistController/create')
                 ->middleware('rbac', 'tasks.create');
         });
@@ -171,12 +203,14 @@ Route::group('api/v1', function () {
                 ->middleware('rbac', 'tasks.update');
             Route::delete('/:id', 'ChecklistController/delete')
                 ->middleware('rbac', 'tasks.delete');
-            Route::post('/:id/items/:item_id/complete', 'ChecklistController/completeItem');
+            Route::post('/:id/items/:item_id/complete', 'ChecklistController/completeItem')
+                ->middleware('rbac', 'checklists.update');
         });
 
         // Staffing routes
         Route::group('activities/:activity_id/staffing', function () {
-            Route::get('', 'StaffingController/index');
+            Route::get('', 'StaffingController/index')
+                ->middleware('rbac', 'staffing.read');
             Route::post('', 'StaffingController/create')
                 ->middleware('rbac', 'staffing.create');
         });
@@ -190,48 +224,71 @@ Route::group('api/v1', function () {
 
         // Search routes
         Route::group('search', function () {
-            Route::get('', 'SearchController/index');
-            Route::get('suggest', 'SearchController/suggest');
-            Route::get('logistics', 'SearchController/logistics');
+            Route::get('', 'SearchController/index')
+                ->middleware('rbac', 'search.read');
+            Route::get('suggest', 'SearchController/suggest')
+                ->middleware('rbac', 'search.read');
+            Route::get('logistics', 'SearchController/logistics')
+                ->middleware('rbac', 'search.read');
         });
 
         Route::group('index', function () {
             Route::get('status', 'SearchController/status')
-                ->middleware('rbac', 'admin');
+                ->middleware('rbac', 'index.manage');
             Route::post('rebuild', 'SearchController/rebuild')
-                ->middleware('rbac', 'admin');
+                ->middleware('rbac', 'index.manage');
             Route::post('cleanup', 'SearchController/cleanup')
-                ->middleware('rbac', 'admin');
+                ->middleware('rbac', 'index.manage');
         });
 
         // Notification routes
         Route::group('notifications', function () {
-            Route::get('', 'NotificationController/index');
-            Route::put('/:id/read', 'NotificationController/markRead');
-            Route::get('settings', 'NotificationController/settings');
-            Route::put('settings', 'NotificationController/updateSettings');
+            Route::get('', 'NotificationController/index')
+                ->middleware('rbac', 'notifications.read');
+            Route::put('/:id/read', 'NotificationController/markRead')
+                ->middleware('rbac', 'notifications.read');
+            Route::get('settings', 'NotificationController/settings')
+                ->middleware('rbac', 'notifications.read');
+            Route::put('settings', 'NotificationController/updateSettings')
+                ->middleware('rbac', 'notifications.read');
         });
 
         // Preferences routes
         Route::group('preferences', function () {
-            Route::get('', 'PreferenceController/index');
-            Route::put('', 'PreferenceController/update');
+            Route::get('', 'PreferenceController/index')
+                ->middleware('rbac', 'preferences.read');
+            Route::put('', 'PreferenceController/update')
+                ->middleware('rbac', 'preferences.update');
         });
 
         // Recommendation routes
         Route::group('recommendations', function () {
-            Route::get('', 'RecommendationController/index');
-            Route::get('popular', 'RecommendationController/popular');
+            Route::get('', 'RecommendationController/index')
+                ->middleware('rbac', 'activities.read');
+            Route::get('popular', 'RecommendationController/popular')
+                ->middleware('rbac', 'activities.read');
         });
 
         // Dashboard routes
         Route::group('dashboard', function () {
-            Route::get('', 'DashboardController/index');
-            Route::get('custom', 'DashboardController/custom');
+            Route::get('', 'DashboardController/index')
+                ->middleware('rbac', 'dashboard.read');
+            Route::get('custom', 'DashboardController/custom')
+                ->middleware('rbac', 'dashboard.read');
             Route::post('custom', 'DashboardController/createCustom')
                 ->middleware('rbac', 'dashboard.create');
             Route::put('custom/:id', 'DashboardController/updateCustom')
                 ->middleware('rbac', 'dashboard.update');
+        });
+
+        // Export routes
+        Route::group('export', function () {
+            Route::get('orders', 'ExportController/orders')
+                ->middleware('rbac', 'dashboard.export');
+            Route::get('activities', 'ExportController/activities')
+                ->middleware('rbac', 'dashboard.export');
+            Route::get('violations', 'ExportController/violations')
+                ->middleware('rbac', 'dashboard.export');
         });
 
         // Audit trail routes
