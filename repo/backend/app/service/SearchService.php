@@ -76,9 +76,8 @@ class SearchService
             case 'relevance':
             default:
                 // Relevance: title matches first, then by recency
-                // Escape user input to prevent SQL injection via orderRaw
-                $safeQuery = addslashes(str_replace(['%', '_'], ['\%', '\_'], $query));
-                $queryBuilder->orderRaw("CASE WHEN title LIKE '%{$safeQuery}%' THEN 0 ELSE 1 END ASC, updated_at DESC");
+                $likeParam = '%' . $query . '%';
+                $queryBuilder->orderRaw("CASE WHEN title LIKE ? THEN 0 ELSE 1 END ASC, updated_at DESC", [$likeParam]);
                 break;
         }
 

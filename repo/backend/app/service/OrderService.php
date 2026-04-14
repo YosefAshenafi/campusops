@@ -124,7 +124,7 @@ class OrderService
             'changed_by' => $h->changed_by,
             'notes' => $h->notes,
             'created_at' => $h->created_at,
-        ], $history);
+        ], $history->all());
     }
 
     /**

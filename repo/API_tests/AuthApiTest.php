@@ -45,6 +45,7 @@ class AuthApiTest extends TestCase
     {
         $user = $this->createMockUser('testuser', 'password123', 'active');
         $user->locked_until = date('Y-m-d H:i:s', time() + 3600);
+        $user->save();
 
         $this->expectException(\Exception::class);
         $this->expectExceptionCode(429);
@@ -69,13 +70,14 @@ class AuthApiTest extends TestCase
     public function testLoginIncrementsFailedAttemptsOnWrongPassword(): void
     {
         $user = $this->createMockUser('testuser', 'password123', 'active');
-        
+
         try {
             $this->service->login('testuser', 'wrong-password');
         } catch (\Exception $e) {
             // Expected
         }
 
+        $user = User::find($user->id);
         $this->assertEquals(1, $user->failed_attempts);
     }
 
@@ -83,6 +85,7 @@ class AuthApiTest extends TestCase
     {
         $user = $this->createMockUser('testuser', 'password123', 'active');
         $user->failed_attempts = 4;
+        $user->save();
 
         $this->expectException(\Exception::class);
         $this->expectExceptionCode(429);
@@ -139,10 +142,12 @@ class AuthApiTest extends TestCase
         if (!$user) {
             $user = new User();
             $user->username = $username;
-            $user->status = $status;
-            $user->setPassword($password);
-            $user->save();
         }
+        $user->status = $status;
+        $user->failed_attempts = 0;
+        $user->locked_until = null;
+        $user->setPassword($password);
+        $user->save();
         return $user;
     }
 }

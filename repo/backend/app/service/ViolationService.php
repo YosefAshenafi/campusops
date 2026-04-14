@@ -36,7 +36,7 @@ class ViolationService
     public function listRules(): array
     {
         $rules = ViolationRule::order('id', 'desc')->select();
-        return array_map(fn($r) => $this->formatRule($r), $rules);
+        return array_map(fn($r) => $this->formatRule($r), $rules->all());
     }
 
     /**
@@ -214,7 +214,7 @@ class ViolationService
     public function getUserViolations(int $userId): array
     {
         $violations = Violation::where('user_id', $userId)
-            ->where('status', '!=', self::STATUS_REJECTED)
+            ->where('status', '<>', self::STATUS_REJECTED)
             ->order('id', 'desc')
             ->select();
 
@@ -235,7 +235,7 @@ class ViolationService
     {
         $memberIds = UserGroupMember::where('group_id', $groupId)->column('user_id');
         $violations = Violation::whereIn('user_id', $memberIds)
-            ->where('status', '!=', self::STATUS_REJECTED)
+            ->where('status', '<>', self::STATUS_REJECTED)
             ->select();
 
         $totalPoints = 0;
@@ -339,7 +339,7 @@ class ViolationService
     protected function updateUserPoints(User $user): void
     {
         $total = Violation::where('user_id', $user->id)
-            ->where('status', '!=', self::STATUS_REJECTED)
+            ->where('status', '<>', self::STATUS_REJECTED)
             ->sum('points');
 
         $user->violation_points = $total;
@@ -370,7 +370,7 @@ class ViolationService
         foreach ($groupIds as $groupId) {
             $memberIds = UserGroupMember::where('group_id', $groupId)->column('user_id');
             $groupTotal = Violation::whereIn('user_id', $memberIds)
-                ->where('status', '!=', self::STATUS_REJECTED)
+                ->where('status', '<>', self::STATUS_REJECTED)
                 ->sum('points');
 
             $threshold = null;

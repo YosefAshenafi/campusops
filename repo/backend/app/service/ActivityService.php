@@ -114,7 +114,7 @@ class ActivityService
             ->order('version_number', 'desc')
             ->select();
 
-        return array_map(fn($v) => $this->formatVersion($v), $versions);
+        return array_map(fn($v) => $this->formatVersion($v), $versions->all());
     }
 
     /**
@@ -157,7 +157,7 @@ class ActivityService
             'to_version' => $l->to_version,
             'changes' => json_decode($l->changes, true),
             'created_at' => $l->created_at,
-        ], $logs);
+        ], $logs->all());
     }
 
     /**
