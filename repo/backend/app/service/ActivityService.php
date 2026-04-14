@@ -257,6 +257,8 @@ class ActivityService
             ->where('status', 'confirmed')
             ->update(['status' => 'pending_acknowledgement']);
 
+        $this->searchService->index('activity', $groupId, $newVersion->title, $newVersion->body, json_decode($newVersion->tags, true) ?: []);
+
         return $this->formatActivity(ActivityGroup::find($groupId), $newVersion);
     }
 

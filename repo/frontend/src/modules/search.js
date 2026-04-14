@@ -13,12 +13,33 @@ layui.define(['jquery', 'layer', 'common'], function (exports) {
         init: function () {
             this.bindEvents();
             this.initAutocomplete();
+            var user = common.getUser();
+            if (user && user.role === 'administrator') {
+                $('#btn-rebuild-wrap').show();
+            }
         },
 
         bindEvents: function () {
             var that = this;
             $('#btn-search').on('click', function () { that.doSearch(); });
             $('#search-input').on('keypress', function (e) { if (e.which === 13) that.doSearch(); });
+            $('#btn-rebuild-index').on('click', function () { that.rebuildIndex(); });
+        },
+
+        rebuildIndex: function () {
+            var btn = $('#btn-rebuild-index');
+            btn.attr('disabled', true).text('Rebuilding...');
+            common.request({
+                url: '/index/rebuild',
+                method: 'POST',
+                success: function (res) {
+                    layer.msg('Index rebuilt successfully', { icon: 1 });
+                    btn.attr('disabled', false).text('Rebuild Index');
+                },
+                error: function () {
+                    btn.attr('disabled', false).text('Rebuild Index');
+                }
+            });
         },
 
         initAutocomplete: function () {

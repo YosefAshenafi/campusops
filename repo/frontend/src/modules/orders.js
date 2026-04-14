@@ -43,7 +43,7 @@ layui.define(['jquery', 'layer', 'form', 'common'], function (exports) {
                 var o = list[i];
                 $tbody.append('<tr>' +
                     '<td>' + o.id + '</td>' +
-                    '<td>Activity #' + o.activity_id + '</td>' +
+                    '<td>' + (o.activity_title || 'Activity #' + o.activity_id) + '</td>' +
                     '<td>' + this.getStateBadge(o.state) + '</td>' +
                     '<td>$' + o.amount + '</td>' +
                     '<td>' + (o.ticket_number || '-') + '</td>' +

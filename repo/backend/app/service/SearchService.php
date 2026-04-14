@@ -248,14 +248,22 @@ class SearchService
 
     /**
      * Rebuild entire index.
+     * Indexes the latest version of every non-archived activity, plus all orders.
      */
     public function rebuild(): void
     {
         SearchIndex::whereRaw('1=1')->delete();
 
-        $activities = ActivityVersion::where('state', 'published')->select();
-        foreach ($activities as $v) {
-            $this->index('activity', $v->group_id, $v->title, $v->body, json_decode($v->tags, true) ?: []);
+        // Index latest version per activity group, skipping archived
+        $versions = ActivityVersion::whereNotIn('state', ['archived'])
+            ->order('version_number', 'desc')
+            ->select();
+        $indexed = [];
+        foreach ($versions as $v) {
+            if (!isset($indexed[$v->group_id])) {
+                $this->index('activity', $v->group_id, $v->title, $v->body, json_decode($v->tags, true) ?: []);
+                $indexed[$v->group_id] = true;
+            }
         }
 
         $orders = Order::select();

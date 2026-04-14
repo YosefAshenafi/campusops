@@ -50,8 +50,28 @@ class OrderService
         $orders = $query->page($page, $limit)->select();
 
         $list = [];
+        $activityIds = [];
         foreach ($orders as $o) {
             $list[] = $this->formatOrder($o);
+            $activityIds[] = $o->activity_id;
+        }
+
+        // Batch-load activity titles to avoid N+1 queries
+        $activityTitles = [];
+        if (!empty($activityIds)) {
+            $versions = \app\model\ActivityVersion::whereIn('group_id', array_unique($activityIds))
+                ->order('version_number', 'desc')
+                ->field('group_id, title')
+                ->select();
+            foreach ($versions as $v) {
+                if (!isset($activityTitles[$v->group_id])) {
+                    $activityTitles[$v->group_id] = $v->title;
+                }
+            }
+        }
+
+        foreach ($list as &$item) {
+            $item['activity_title'] = $activityTitles[$item['activity_id']] ?? 'Activity #' . $item['activity_id'];
         }
 
         return [

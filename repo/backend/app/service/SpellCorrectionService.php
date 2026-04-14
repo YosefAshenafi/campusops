@@ -38,7 +38,7 @@ class SpellCorrectionService
         }
 
         $distance = range(0, $len2);
-        $previousDistance = range(0, $len1);
+        $previousDistance = range(0, $len2);
 
         for ($i = 1; $i <= $len1; $i++) {
             $currentDistance = [$i];

@@ -42,15 +42,15 @@ Route::group('api/v1', function () {
 
         // Activity management routes
         Route::group('activities', function () {
-            Route::get('', 'ActivityController@index')
+            Route::get('', 'ActivityController/index')
                 ->middleware('rbac', 'activities.read');
-            Route::get('/:id', 'ActivityController@show')
+            Route::get('/:id', 'ActivityController/show')
                 ->middleware('rbac', 'activities.read');
-            Route::get('/:id/versions', 'ActivityController@versions')
+            Route::get('/:id/versions', 'ActivityController/versions')
                 ->middleware('rbac', 'activities.read');
-            Route::get('/:id/signups', 'ActivityController@signups')
+            Route::get('/:id/signups', 'ActivityController/signups')
                 ->middleware('rbac', 'activities.read');
-            Route::get('/:id/change-log', 'ActivityController@changeLog')
+            Route::get('/:id/change-log', 'ActivityController/changeLog')
                 ->middleware('rbac', 'activities.read');
             Route::post('', 'ActivityController/create')
                 ->middleware('rbac', 'activities.create');
@@ -74,13 +74,13 @@ Route::group('api/v1', function () {
 
         // Order management routes (with sensitive data masking)
         Route::group('orders', function () {
-            Route::get('', 'OrderController@index')
+            Route::get('', 'OrderController/index')
                 ->middleware('rbac', 'orders.read')
                 ->middleware('sensitive_data');
-            Route::get('/:id', 'OrderController@show')
+            Route::get('/:id', 'OrderController/show')
                 ->middleware('rbac', 'orders.read')
                 ->middleware('sensitive_data');
-            Route::get('/:id/history', 'OrderController@history')
+            Route::get('/:id/history', 'OrderController/history')
                 ->middleware('rbac', 'orders.read');
             Route::post('', 'OrderController/create')
                 ->middleware('rbac', 'orders.create');
@@ -119,17 +119,17 @@ Route::group('api/v1', function () {
         Route::group('shipments', function () {
             Route::get('', 'ShipmentController/listAll')
                 ->middleware('rbac', 'shipments.read');
-            Route::get('/:id', 'ShipmentController@show')
+            Route::get('/:id', 'ShipmentController/show')
                 ->middleware('rbac', 'shipments.read');
-            Route::post('/:id/scan', 'ShipmentController@scan')
+            Route::post('/:id/scan', 'ShipmentController/scan')
                 ->middleware('rbac', 'shipments.update');
-            Route::get('/:id/scan-history', 'ShipmentController@scanHistory')
+            Route::get('/:id/scan-history', 'ShipmentController/scanHistory')
                 ->middleware('rbac', 'shipments.read');
-            Route::post('/:id/confirm-delivery', 'ShipmentController@confirmDelivery')
+            Route::post('/:id/confirm-delivery', 'ShipmentController/confirmDelivery')
                 ->middleware('rbac', 'shipments.deliver');
-            Route::get('/:id/exceptions', 'ShipmentController@exceptions')
+            Route::get('/:id/exceptions', 'ShipmentController/exceptions')
                 ->middleware('rbac', 'shipments.read');
-            Route::post('/:id/exceptions', 'ShipmentController@reportException')
+            Route::post('/:id/exceptions', 'ShipmentController/reportException')
                 ->middleware('rbac', 'shipments.exception');
         });
 
