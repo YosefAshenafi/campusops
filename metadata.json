@@ -1,30 +1,9 @@
 {
-    "project_type": "Unified Campus Operations & Logistics Management Portal",
-    "frontend_language": "JavaScript",
-    "backend_language": "PHP",
-    "frontend_framework": "Layui",
-    "frontend_ui_theme": "Layui Admin UI (role-based navigation, admin-style layout)",
-    "backend_framework": "ThinkPHP",
-    "api_style": "REST-style APIs",
-    "database": "MySQL",
-    "search_engine": "Local Full-Text Search + Local Logistics Search (tokenization, optional synonym + pinyin matching, basic spell correction)",
-    "indexing": "Incremental Local Indexing (CRUD-triggered) + Nightly Cleanup Job",
-    "authentication": "Local Username/Password (salted hashing, lockout policy)",
-    "authorization": "RBAC (Role-Based Access Control)",
-    "security_features": [
-      "Offline-only authentication",
-      "Salted password hashing",
-      "Account lockout (5 failed attempts / 15 minutes)",
-      "Sensitive field masking in UI",
-      "Encryption at rest for sensitive fields",
-      "Export watermarking (username + timestamp)",
-      "SHA-256 file fingerprinting"
-    ],
-    "file_uploads": {
-      "supported_types": ["JPG", "PNG", "PDF"],
-      "max_size_mb": 10,
-      "validation": "File-type validation + SHA-256 fingerprinting"
-    },
-    "exports": ["PNG", "PDF", "Excel"],
-    "deployment": "On-Premise (Fully Offline)"
-  }
+  "prompt": "A Unified Campus Operations & Logistics Management Portal with main features including logistics request tracking, inventory management, facility booking, staff scheduling, export reporting, and back-office search. The primary roles are Administrator (campus manager), Staff (operations personnel), Requester (campus user), and Approver (department head). The Layui-based interface uses role-based navigation to separate Logistics, Inventory, Facilities, Scheduling, Reports, and Admin views, with responsive layouts for desktop and mobile. Users submit logistics requests that move through pending/approved/in-progress/completed/canceled states; Approvers review and action requests through a detail Drawer with status timeline. Inventory management tracks stock levels with low-stock alerts, barcode-based lookup, and file-upload support (JPG, PNG, PDF up to 10 MB) with SHA-256 fingerprinting. Facility booking allows users to reserve rooms and equipment with conflict detection and availability calendars. Staff scheduling supports shift assignment, overtime tracking, and schedule export. Reporting provides filtered data exports in PNG, PDF, and Excel formats with export watermarking (username + timestamp). Back-office search indexes requests, inventory items, and staff profiles using local full-text search with tokenization, optional synonym matching, basic spell correction, incremental CRUD-triggered indexing, and a nightly cleanup job. Authentication is local username/password with salted hashing, 5 failed-attempt lockout for 15 minutes, and RBAC authorization. Sensitive fields are masked in the UI and encrypted at rest. All data is persisted in a MySQL database accessed via ThinkPHP REST-style APIs, deployed fully on-premise with no external dependencies.",
+  "project_type": "web",
+  "frontend_language": "HTML, CSS, JavaScript",
+  "backend_language": "PHP",
+  "frontend_framework": "Layui",
+  "backend_framework": "ThinkPHP",
+  "database": "MySQL"
+}
