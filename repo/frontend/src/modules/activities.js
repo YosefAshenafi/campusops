@@ -130,25 +130,29 @@ layui.define(['jquery', 'layer', 'form', 'common'], function (exports) {
             var that = this;
             that.userInfo = common.getUser();
 
-            common.request({
-                url: '/activities/' + activityId,
-                success: function (res) {
-                    if (res.success) {
-                        that.currentActivity = res.data;
-                        that.renderDetail(res.data);
-                    }
-                }
-            });
-
             var $container = $('#app-content-inner');
             $container.find('.activities-list-view').hide();
-            if (!$container.find('.activity-detail-view').length) {
-                $container.append($('.activity-detail-view').show());
-            } else {
+            $container.find('.activity-form-view').hide();
+
+            function onDetailReady() {
                 $container.find('.activity-detail-view').show();
+                that.bindDetailEvents();
+                common.request({
+                    url: '/activities/' + activityId,
+                    success: function (res) {
+                        if (res.success) {
+                            that.currentActivity = res.data;
+                            that.renderDetail(res.data);
+                        }
+                    }
+                });
             }
 
-            that.bindDetailEvents();
+            if (!$container.find('.activity-detail-view').length) {
+                $('<div>').appendTo($container).load('/src/views/activities/detail.html', onDetailReady);
+            } else {
+                onDetailReady();
+            }
         },
 
         /**
@@ -272,39 +276,39 @@ layui.define(['jquery', 'layer', 'form', 'common'], function (exports) {
         bindDetailEvents: function () {
             var that = this;
 
-            $('#btn-edit').on('click', function () {
+            $('#btn-edit').off('click').on('click', function () {
                 that.showForm(that.currentActivity.id);
             });
 
-            $('#btn-versions').on('click', function () {
+            $('#btn-versions').off('click').on('click', function () {
                 that.showVersions(that.currentActivity.id);
             });
 
-            $('#btn-changelog').on('click', function () {
+            $('#btn-changelog').off('click').on('click', function () {
                 that.showChangeLog(that.currentActivity.id);
             });
 
-            $('#btn-publish').on('click', function () {
+            $('#btn-publish').off('click').on('click', function () {
                 that.transitionActivity(that.currentActivity.id, 'publish');
             });
 
-            $('#btn-start').on('click', function () {
+            $('#btn-start').off('click').on('click', function () {
                 that.transitionActivity(that.currentActivity.id, 'start');
             });
 
-            $('#btn-complete').on('click', function () {
+            $('#btn-complete').off('click').on('click', function () {
                 that.transitionActivity(that.currentActivity.id, 'complete');
             });
 
-            $('#btn-archive').on('click', function () {
+            $('#btn-archive').off('click').on('click', function () {
                 that.transitionActivity(that.currentActivity.id, 'archive');
             });
 
-            $('#btn-signup').on('click', function () {
+            $('#btn-signup').off('click').on('click', function () {
                 that.signupActivity(that.currentActivity.id);
             });
 
-            $('#btn-cancel-signup').on('click', function () {
+            $('#btn-cancel-signup').off('click').on('click', function () {
                 that.cancelSignup(that.currentActivity.id);
             });
         },
@@ -440,33 +444,45 @@ layui.define(['jquery', 'layer', 'form', 'common'], function (exports) {
         showForm: function (activityId) {
             var that = this;
             var isEdit = !!activityId;
-            $('#form-title').text(isEdit ? 'Edit Activity' : 'Create Activity');
-            $('#btn-submit').text(isEdit ? 'Update' : 'Create');
-
-            if (isEdit) {
-                common.request({
-                    url: '/activities/' + activityId,
-                    success: function (res) {
-                        if (res.success) {
-                            that.fillForm(res.data);
-                        }
-                    }
-                });
-            } else {
-                that.resetForm();
-            }
 
             var $container = $('#app-content-inner');
             $container.find('.activities-list-view').hide();
             $container.find('.activity-detail-view').hide();
-            if (!$container.find('.activity-form-view').length) {
-                $container.append($('.activity-form-view').show());
-            } else {
+
+            function onFormReady() {
+                $('#form-title').text(isEdit ? 'Edit Activity' : 'Create Activity');
+                $('#btn-submit').text(isEdit ? 'Update' : 'Create');
+
+                if (isEdit) {
+                    common.request({
+                        url: '/activities/' + activityId,
+                        success: function (res) {
+                            if (res.success) {
+                                that.fillForm(res.data);
+                            }
+                        }
+                    });
+                } else {
+                    that.resetForm();
+                }
+
                 $container.find('.activity-form-view').show();
+                form.render();
+                that.bindFormEvents();
             }
 
+            if (!$container.find('.activity-form-view').length) {
+                $('<div>').appendTo($container).load('/src/views/activities/form.html', onFormReady);
+            } else {
+                onFormReady();
+            }
+        },
+
+        /**
+         * Initialize form view (called by form.html's embedded script on load).
+         */
+        initForm: function () {
             form.render();
-            this.bindFormEvents();
         },
 
         /**
@@ -503,7 +519,7 @@ layui.define(['jquery', 'layer', 'form', 'common'], function (exports) {
                 return false;
             });
 
-            $('#btn-cancel').on('click', function () {
+            $('#btn-cancel').off('click').on('click', function () {
                 $('#app-content-inner').find('.activity-form-view').hide();
                 $('#app-content-inner').find('.activities-list-view').show();
             });

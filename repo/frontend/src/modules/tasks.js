@@ -78,13 +78,55 @@ layui.define(['jquery', 'layer', 'form', 'common'], function (exports) {
         },
 
         showTaskForm: function (taskId) {
-            var content = '<form class="layui-form layui-form-pane">' +
+            var that = this;
+            var content = '<form class="layui-form layui-form-pane" style="padding:15px;">' +
                 '<div class="layui-form-item"><label class="layui-form-label">Title</label><div class="layui-input-block"><input type="text" name="title" class="layui-input" required></div></div>' +
                 '<div class="layui-form-item"><label class="layui-form-label">Description</label><div class="layui-input-block"><textarea name="description" class="layui-textarea"></textarea></div></div>' +
                 '<div class="layui-form-item"><label class="layui-form-label">Assignee ID</label><div class="layui-input-block"><input type="number" name="assigned_to" class="layui-input"></div></div>' +
                 '<div class="layui-form-item"><label class="layui-form-label">Due Date</label><div class="layui-input-block"><input type="text" name="due_date" class="layui-input" placeholder="YYYY-MM-DD"></div></div>' +
-                '<div class="layui-form-item"><button class="layui-btn" lay-submit>Save</button></div></form>';
-            layer.open({ type: 1, title: taskId ? 'Edit Task' : 'Add Task', content: content, area: ['400px', '400px'] });
+                '<div class="layui-form-item"><button class="layui-btn" lay-submit lay-filter="task-form">Save</button></div></form>';
+            layer.open({
+                type: 1,
+                title: taskId ? 'Edit Task' : 'Add Task',
+                content: content,
+                area: ['400px', '400px'],
+                success: function (layerElem) {
+                    layui.form.render();
+                    if (taskId) {
+                        common.request({
+                            url: '/tasks/' + taskId,
+                            success: function (res) {
+                                if (res.success) {
+                                    var t = res.data;
+                                    layerElem.find('[name="title"]').val(t.title || '');
+                                    layerElem.find('[name="description"]').val(t.description || '');
+                                    layerElem.find('[name="assigned_to"]').val(t.assigned_to || '');
+                                    layerElem.find('[name="due_date"]').val(t.due_date || '');
+                                }
+                            }
+                        });
+                    }
+                    layui.form.on('submit(task-form)', function (data) {
+                        var url = taskId
+                            ? '/tasks/' + taskId
+                            : '/activities/' + that.currentActivityId + '/tasks';
+                        var method = taskId ? 'PUT' : 'POST';
+                        common.request({
+                            url: url,
+                            method: method,
+                            data: data.field,
+                            success: function () {
+                                layer.closeAll();
+                                layer.msg('Saved', { icon: 1 });
+                                if (that.currentActivityId) {
+                                    that.loadTasks(that.currentActivityId);
+                                }
+                            }
+                        });
+                        return false;
+                    });
+                }
+            });
         },
 
         showStatusChange: function (id) {

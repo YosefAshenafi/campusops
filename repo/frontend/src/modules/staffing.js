@@ -59,12 +59,36 @@ layui.define(['jquery', 'layer', 'form', 'common'], function (exports) {
         },
 
         showForm: function (id) {
-            var content = '<form class="layui-form layui-form-pane">' +
+            var that = this;
+            var content = '<form class="layui-form layui-form-pane" style="padding:15px;">' +
                 '<div class="layui-form-item"><label class="layui-form-label">Role</label><div class="layui-input-block"><input type="text" name="role" class="layui-input" required></div></div>' +
                 '<div class="layui-form-item"><label class="layui-form-label">Required</label><div class="layui-input-block"><input type="number" name="required_count" class="layui-input" value="1"></div></div>' +
                 '<div class="layui-form-item"><label class="layui-form-label">Notes</label><div class="layui-input-block"><textarea name="notes" class="layui-textarea"></textarea></div></div>' +
-                '<div class="layui-form-item"><button class="layui-btn" lay-submit>Save</button></div></form>';
-            layer.open({ type: 1, title: id ? 'Edit Staffing' : 'Add Staffing', content: content, area: ['400px', '350px'] });
+                '<div class="layui-form-item"><button class="layui-btn" lay-submit lay-filter="staffing-form">Save</button></div></form>';
+            layer.open({
+                type: 1,
+                title: id ? 'Edit Staffing' : 'Add Staffing',
+                content: content,
+                area: ['400px', '350px'],
+                success: function () {
+                    layui.form.render();
+                    layui.form.on('submit(staffing-form)', function (data) {
+                        var url = id ? '/staffing/' + id : '/activities/' + that.currentActivityId + '/staffing';
+                        var method = id ? 'PUT' : 'POST';
+                        common.request({
+                            url: url,
+                            method: method,
+                            data: data.field,
+                            success: function () {
+                                layer.closeAll();
+                                layer.msg('Saved', { icon: 1 });
+                                that.load(that.currentActivityId);
+                            }
+                        });
+                        return false;
+                    });
+                }
+            });
         },
 
         delete: function (id) {

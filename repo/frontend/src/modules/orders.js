@@ -66,6 +66,7 @@ layui.define(['jquery', 'layer', 'form', 'common'], function (exports) {
             var that = this;
             $('#btn-search').on('click', function () { that.loadOrders(1); });
             $('#filter-state').on('change', function () { that.loadOrders(1); });
+            $('#btn-add-order').on('click', function () { that.showOrderForm(); });
             $('#orders-tbody').on('click', '[data-action]', function () {
                 that.showDetail($(this).attr('data-id'));
             });
@@ -74,24 +75,61 @@ layui.define(['jquery', 'layer', 'form', 'common'], function (exports) {
         showDetail: function (orderId) {
             var that = this;
             this.userInfo = common.getUser();
-            common.request({
-                url: '/orders/' + orderId, 
-                success: function (res) {
-                    if (res.success) {
-                        that.currentOrder = res.data;
-                        that.renderDetail(res.data);
-                    }
-                }
-            });
+
             var $container = $('#app-content-inner');
             $container.find('.orders-list-view').hide();
-            if (!$container.find('.order-detail-view').length) {
-                $container.append($('.order-detail-view').show());
-            } else {
+
+            function onDetailReady() {
                 $container.find('.order-detail-view').show();
+                that.loadHistory(orderId);
+                common.request({
+                    url: '/orders/' + orderId,
+                    success: function (res) {
+                        if (res.success) {
+                            that.currentOrder = res.data;
+                            that.renderDetail(res.data);
+                            that.bindDetailEvents();
+                        }
+                    }
+                });
             }
-            that.bindDetailEvents();
-            that.loadHistory(orderId);
+
+            if (!$container.find('.order-detail-view').length) {
+                $('<div>').appendTo($container).load('/src/views/orders/detail.html', onDetailReady);
+            } else {
+                onDetailReady();
+            }
+        },
+
+        showOrderForm: function () {
+            var that = this;
+            var content = '<form class="layui-form layui-form-pane" style="padding:15px;">' +
+                '<div class="layui-form-item"><label class="layui-form-label">Activity ID</label><div class="layui-input-block"><input type="number" name="activity_id" class="layui-input" required></div></div>' +
+                '<div class="layui-form-item"><label class="layui-form-label">Amount ($)</label><div class="layui-input-block"><input type="number" name="amount" step="0.01" class="layui-input" required></div></div>' +
+                '<div class="layui-form-item"><label class="layui-form-label">Notes</label><div class="layui-input-block"><textarea name="notes" class="layui-textarea"></textarea></div></div>' +
+                '<div class="layui-form-item"><button class="layui-btn" lay-submit lay-filter="order-form">Create</button></div></form>';
+            layer.open({
+                type: 1,
+                title: 'Create Order',
+                content: content,
+                area: ['450px', '380px'],
+                success: function () {
+                    layui.form.render();
+                    layui.form.on('submit(order-form)', function (data) {
+                        common.request({
+                            url: '/orders',
+                            method: 'POST',
+                            data: data.field,
+                            success: function () {
+                                layer.closeAll();
+                                layer.msg('Order created', { icon: 1 });
+                                that.loadOrders(1);
+                            }
+                        });
+                        return false;
+                    });
+                }
+            });
         },
 
         renderDetail: function (order) {
@@ -160,39 +198,38 @@ layui.define(['jquery', 'layer', 'form', 'common'], function (exports) {
 
         bindDetailEvents: function () {
             var that = this;
-            $('[data-action="initiate-payment"]').on('click', function () {
-                that.transition(that.currentOrder.id, 'initiate-payment');
-            });
-            $('[data-action="confirm-payment"]').on('click', function () {
-                var method = prompt('Payment method:');
-                if (method) {
-                    common.request({
-                        url: '/orders/' + that.currentOrder.id + '/confirm-payment',
-                        method: 'POST',
-                        data: { payment_method: method, amount: that.currentOrder.amount },
-                        success: function () { that.showDetail(that.currentOrder.id); }
-                    });
+            // Use event delegation so handlers work on dynamically-created action buttons
+            $('#order-actions').off('click').on('click', '[data-action]', function () {
+                var action = $(this).attr('data-action');
+                if (action === 'initiate-payment') {
+                    that.transition(that.currentOrder.id, 'initiate-payment');
+                } else if (action === 'confirm-payment') {
+                    var method = prompt('Payment method:');
+                    if (method) {
+                        common.request({
+                            url: '/orders/' + that.currentOrder.id + '/confirm-payment',
+                            method: 'POST',
+                            data: { payment_method: method, amount: that.currentOrder.amount },
+                            success: function () { that.showDetail(that.currentOrder.id); }
+                        });
+                    }
+                } else if (action === 'start-ticketing') {
+                    that.transition(that.currentOrder.id, 'start-ticketing');
+                } else if (action === 'ticket') {
+                    var num = prompt('Ticket number:');
+                    if (num) {
+                        common.request({
+                            url: '/orders/' + that.currentOrder.id + '/ticket',
+                            method: 'POST',
+                            data: { ticket_number: num },
+                            success: function () { that.showDetail(that.currentOrder.id); }
+                        });
+                    }
+                } else if (action === 'close') {
+                    that.transition(that.currentOrder.id, 'close');
+                } else if (action === 'cancel') {
+                    that.transition(that.currentOrder.id, 'cancel');
                 }
-            });
-            $('[data-action="start-ticketing"]').on('click', function () {
-                that.transition(that.currentOrder.id, 'start-ticketing');
-            });
-            $('[data-action="ticket"]').on('click', function () {
-                var num = prompt('Ticket number:');
-                if (num) {
-                    common.request({
-                        url: '/orders/' + that.currentOrder.id + '/ticket',
-                        method: 'POST',
-                        data: { ticket_number: num },
-                        success: function () { that.showDetail(that.currentOrder.id); }
-                    });
-                }
-            });
-            $('[data-action="close"]').on('click', function () {
-                that.transition(that.currentOrder.id, 'close');
-            });
-            $('[data-action="cancel"]').on('click', function () {
-                that.transition(that.currentOrder.id, 'cancel');
             });
         },
 

@@ -135,35 +135,40 @@ layui.define(['jquery', 'layer', 'form', 'common'], function (exports) {
         showForm: function (userId) {
             var that = this;
             var isEdit = !!userId;
-            $('#form-title').text(isEdit ? 'Edit User' : 'Add User');
-            $('#btn-submit').text(isEdit ? 'Update User' : 'Create User');
-            $('#password-group').hide();
-            $('#generate-password').prop('checked', false);
-
-            if (isEdit) {
-                $('#password-group').show();
-                common.request({
-                    url: '/users/' + userId,
-                    success: function (res) {
-                        if (res.success) {
-                            that.fillForm(res.data);
-                        }
-                    }
-                });
-            } else {
-                that.resetForm();
-            }
 
             var $container = $('#app-content-inner');
             $container.find('.users-list-view').hide();
-            if (!$container.find('.user-form-view').length) {
-                $container.append($('.user-form-view').show());
-            } else {
+
+            function onFormReady() {
+                $('#form-title').text(isEdit ? 'Edit User' : 'Add User');
+                $('#btn-submit').text(isEdit ? 'Update User' : 'Create User');
+                $('#password-group').hide();
+                $('#generate-password').prop('checked', false);
+
+                if (isEdit) {
+                    $('#password-group').show();
+                    common.request({
+                        url: '/users/' + userId,
+                        success: function (res) {
+                            if (res.success) {
+                                that.fillForm(res.data);
+                            }
+                        }
+                    });
+                } else {
+                    that.resetForm();
+                }
+
                 $container.find('.user-form-view').show();
+                form.render();
+                that.bindFormEvents();
             }
 
-            form.render();
-            this.bindFormEvents();
+            if (!$container.find('.user-form-view').length) {
+                $('<div>').appendTo($container).load('/src/views/users/form.html', onFormReady);
+            } else {
+                onFormReady();
+            }
         },
 
         /**
@@ -197,12 +202,12 @@ layui.define(['jquery', 'layer', 'form', 'common'], function (exports) {
                 return false;
             });
 
-            $('#btn-cancel').on('click', function () {
+            $('#btn-cancel').off('click').on('click', function () {
                 $('#app-content-inner').find('.user-form-view').hide();
                 $('#app-content-inner').find('.users-list-view').show();
             });
 
-            $('#generate-password').on('change', function () {
+            $('#generate-password').off('change').on('change', function () {
                 if ($(this).prop('checked')) {
                     $('#input-password').val(that.generatePassword()).attr('readonly', true);
                 } else {

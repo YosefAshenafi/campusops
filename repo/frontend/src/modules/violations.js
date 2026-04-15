@@ -13,6 +13,12 @@ layui.define(['jquery', 'layer', 'form', 'common'], function (exports) {
         initList: function () {
             this.userInfo = common.getUser();
             this.loadViolations(1);
+            if (this.userInfo.role === 'administrator' || this.userInfo.role === 'reviewer') {
+                this.loadRules();
+                $('#rules-section').show();
+            } else {
+                $('#rules-section').hide();
+            }
             this.bindEvents();
         },
 
@@ -182,15 +188,38 @@ layui.define(['jquery', 'layer', 'form', 'common'], function (exports) {
         },
 
         showRuleForm: function (ruleId) {
-            var name = ruleId ? 'Edit Rule' : 'Add Rule';
-            var content = '<form class="layui-form layui-form-pane">' +
+            var that = this;
+            var content = '<form class="layui-form layui-form-pane" style="padding:15px;">' +
                 '<div class="layui-form-item"><label class="layui-form-label">Name</label><div class="layui-input-block"><input type="text" name="name" class="layui-input" required></div></div>' +
                 '<div class="layui-form-item"><label class="layui-form-label">Category</label><div class="layui-input-block"><input type="text" name="category" class="layui-input"></div></div>' +
                 '<div class="layui-form-item"><label class="layui-form-label">Points</label><div class="layui-input-block"><input type="number" name="points" class="layui-input" required></div></div>' +
                 '<div class="layui-form-item"><label class="layui-form-label">Description</label><div class="layui-input-block"><textarea name="description" class="layui-textarea"></textarea></div></div>' +
-                '<div class="layui-form-item"><button class="layui-btn" lay-submit>Save</button></div></form>';
+                '<div class="layui-form-item"><button class="layui-btn" lay-submit lay-filter="rule-form">Save</button></div></form>';
 
-            layer.open({ type: 1, title: name, content: content, area: ['500px', '400px'] });
+            layer.open({
+                type: 1,
+                title: ruleId ? 'Edit Rule' : 'Add Rule',
+                content: content,
+                area: ['500px', '400px'],
+                success: function () {
+                    layui.form.render();
+                    layui.form.on('submit(rule-form)', function (data) {
+                        var url = ruleId ? '/violations/rules/' + ruleId : '/violations/rules';
+                        var method = ruleId ? 'PUT' : 'POST';
+                        common.request({
+                            url: url,
+                            method: method,
+                            data: data.field,
+                            success: function () {
+                                layer.closeAll();
+                                layer.msg('Saved', { icon: 1 });
+                                that.loadRules();
+                            }
+                        });
+                        return false;
+                    });
+                }
+            });
         },
 
         showViolationDetail: function (id) {
