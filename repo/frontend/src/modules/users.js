@@ -180,6 +180,8 @@ layui.define(['jquery', 'layer', 'form', 'common'], function (exports) {
             $('#input-role').val(user.role);
             $('#input-status').val(user.status);
             $('#password-group').hide();
+            // Re-render selects so Layui custom dropdowns reflect the new values
+            form.render('select');
         },
 
         /**

@@ -80,9 +80,17 @@ layui.define(['jquery', 'layer', 'form', 'common'], function (exports) {
                 method: 'PUT',
                 success: function () {
                     if (entityType && entityId) {
-                        var url = entityType === 'activity' ? '/src/views/activities/detail.html?id=' + entityId :
-                                entityType === 'order' ? '/src/views/orders/detail.html?id=' + entityId : '#';
-                        $('#app-content-inner').load(url);
+                        var $container = layui.jquery('#app-content-inner');
+                        $container.empty();
+                        if (entityType === 'activity') {
+                            layui.use('activities', function () {
+                                layui.activities.showDetail(entityId);
+                            });
+                        } else if (entityType === 'order') {
+                            layui.use('orders', function () {
+                                layui.orders.showDetail(entityId);
+                            });
+                        }
                     }
                     notifications.load();
                 }

@@ -128,7 +128,7 @@ layui.define(['jquery', 'layer', 'common'], function (exports) {
                 $container.html('<div style="text-align:center;padding:30px;color:#999;">No results found</div>');
                 return;
             }
-            var html = '<table class="layui-table" lay-skin="line"><thead><tr><th>Type</th><th>Title</th><th>Preview</th><th>Tags</th><th>Author</th></tr></thead><tbody>';
+            var html = '<table class="layui-table" lay-skin="line"><thead><tr><th>Type</th><th>Title</th><th>Preview</th><th>Tags</th><th>Author</th><th>Actions</th></tr></thead><tbody>';
             for (var i = 0; i < list.length; i++) {
                 var r = list[i];
                 var hl = r.highlights || {};
@@ -138,10 +138,11 @@ layui.define(['jquery', 'layer', 'common'], function (exports) {
                 var authorHtml = hl.author ? hl.author : that.escapeHtml(r.author || '-');
                 html += '<tr>' +
                     '<td><span class="layui-badge layui-bg-blue">' + that.escapeHtml(r.type) + '</span></td>' +
-                    '<td><a href="' + that.escapeHtml(r.url) + '">' + titleHtml + '</a></td>' +
+                    '<td>' + titleHtml + '</td>' +
                     '<td>' + bodyHtml + '</td>' +
                     '<td>' + tagsHtml + '</td>' +
-                    '<td>' + authorHtml + '</td></tr>';
+                    '<td>' + authorHtml + '</td>' +
+                    '<td><button class="layui-btn layui-btn-xs layui-btn-normal" onclick="layui.search.loadResult(' + parseInt(r.id, 10) + ',\'' + that.escapeHtml(r.type) + '\')">View</button></td></tr>';
             }
             html += '</tbody></table>';
             $container.html(html);
@@ -200,8 +201,17 @@ layui.define(['jquery', 'layer', 'common'], function (exports) {
         },
 
         loadResult: function (id, type) {
-            var url = type === 'activity' ? '/src/views/activities/detail.html?id=' + id : '/src/views/orders/detail.html?id=' + id;
-            $('#app-content-inner').load(url);
+            var $container = layui.jquery('#app-content-inner');
+            $container.empty();
+            if (type === 'activity') {
+                layui.use('activities', function () {
+                    layui.activities.showDetail(id);
+                });
+            } else if (type === 'order') {
+                layui.use('orders', function () {
+                    layui.orders.showDetail(id);
+                });
+            }
         }
     };
 

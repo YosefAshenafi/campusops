@@ -38,7 +38,7 @@ layui.use(['jquery', 'layer', 'common'], function() {
         var action = $(this).attr('data-action');
         var id = $(this).attr('data-id');
         var state = action === 'approve' ? 'approved' : 'rejected';
-        layer.confirm(action.charAt(0).toUpperCase() + action.slice(1) + ' order #' + id + '?', { icon: 3 }, function (idx) {
+        layer.confirm(action.charAt(0).toUpperCase() + action.slice(1) + ' order #' + id + '?', { icon: 3, btn: ['OK', 'Cancel'] }, function (idx) {
             common.request({
                 url: '/orders/' + id + '/approve',
                 method: 'POST',

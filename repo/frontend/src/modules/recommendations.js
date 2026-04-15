@@ -43,7 +43,11 @@ layui.define(['jquery', 'common'], function (exports) {
         },
 
         view: function (id) {
-            $('#app-content-inner').load('/src/views/activities/detail.html?id=' + id);
+            var $container = layui.jquery('#app-content-inner');
+            $container.empty();
+            layui.use('activities', function () {
+                layui.activities.showDetail(id);
+            });
         },
 
         loadPopular: function (containerId, limit) {

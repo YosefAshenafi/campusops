@@ -492,12 +492,12 @@ layui.define(['jquery', 'layer', 'form', 'common'], function (exports) {
             $('#activity-id').val(activity.id);
             $('#input-title').val(activity.title);
             $('#input-body').val(activity.body);
-            $('#input-tags').val(activity.tags.join(', '));
+            $('#input-tags').val((activity.tags || []).join(', '));
             $('#input-max-headcount').val(activity.max_headcount);
             $('#input-signup-start').val(activity.signup_start || '');
             $('#input-signup-end').val(activity.signup_end || '');
-            $('#input-eligibility-tags').val(activity.eligibility_tags.join(', '));
-            $('#input-supplies').val(activity.required_supplies.join(', '));
+            $('#input-eligibility-tags').val((activity.eligibility_tags || []).join(', '));
+            $('#input-supplies').val((activity.required_supplies || []).join(', '));
         },
 
         /**
