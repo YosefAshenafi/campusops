@@ -7,7 +7,7 @@ Configuration: /Users/yosef/Documents/Projects/Eaglepoint/TASK-req_f1d20d3ece96/
 ............................................................... 126 / 182 ( 69%)
 ........................................................        182 / 182 (100%)
 
-Time: 00:16.176, Memory: 16.00 MB
+Time: 00:16.241, Memory: 16.00 MB
 
 Activity Service (tests\services\ActivityService)
  ✔ List activities returns one row per group when multiple versions exist
