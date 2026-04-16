@@ -30,7 +30,7 @@ class ShipmentService
         $shipments = $query->page($page, $limit)->select();
 
         return [
-            'list' => array_map(fn($s) => $this->formatShipment($s), $shipments),
+            'list' => array_map(fn($s) => $this->formatShipment($s), $shipments->all()),
             'total' => $total,
             'page' => $page,
             'limit' => $limit,
@@ -44,7 +44,7 @@ class ShipmentService
     {
         $shipments = Shipment::where('order_id', $orderId)->select();
 
-        return array_map(fn($s) => $this->formatShipment($s), $shipments);
+        return array_map(fn($s) => $this->formatShipment($s), $shipments->all());
     }
 
     /**
@@ -129,7 +129,7 @@ class ShipmentService
             'location' => $e->location,
             'result' => $e->result,
             'created_at' => $e->created_at,
-        ], $events);
+        ], $events->all());
     }
 
     /**
@@ -180,7 +180,7 @@ class ShipmentService
             'description' => $e->description,
             'reported_by' => $e->reported_by,
             'created_at' => $e->created_at,
-        ], $exceptions);
+        ], $exceptions->all());
     }
 
     /**

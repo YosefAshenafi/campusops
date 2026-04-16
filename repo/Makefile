@@ -63,12 +63,17 @@ index-cleanup:
 # ===== Layui =====
 
 layui:
-	@echo "Downloading Layui 2.9.x..."
+	@echo "Installing frontend dependencies (Layui + test tooling)..."
 	docker compose run --rm node sh -c "\
 		cd /var/www/frontend && \
-		npm init -y > /dev/null 2>&1 && \
-		npm install layui@2.9.21 && \
+		npm install --prefer-offline --no-audit --no-fund 2>&1 | tail -3 && \
 		mkdir -p src/lib/layui && \
-		cp -r node_modules/layui/dist/* src/lib/layui/ && \
-		rm -rf node_modules package.json package-lock.json"
+		cp -r node_modules/layui/dist/* src/lib/layui/"
 	@echo "Layui installed to frontend/src/lib/layui/"
+
+test-frontend:
+	@echo "Running frontend unit tests (Jest inside Docker)..."
+	docker compose run --rm node sh -c "\
+		cd /var/www/frontend && \
+		npm install --prefer-offline --no-audit --no-fund --silent && \
+		npx jest --ci"

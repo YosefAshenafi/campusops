@@ -1,5 +1,14 @@
 <?php
 
+// Prevent duplicate route registration when this file is included multiple times
+// in the same PHP process (e.g. PHPUnit, where Http::loadRoutes() runs on every
+// Http::run() call). In production each web request is a fresh process, so the
+// constant is never pre-defined and routes register normally.
+if (defined('CAMPUSOPS_ROUTES_LOADED')) {
+    return;
+}
+define('CAMPUSOPS_ROUTES_LOADED', true);
+
 use think\facade\Route;
 
 // API v1 routes
@@ -108,13 +117,13 @@ Route::group('api/v1', function () {
                 ->middleware('rbac', 'orders.approve');
         });
 
-        // Shipment routes
-        Route::group('orders/:order_id/shipments', function () {
-            Route::get('', 'ShipmentController/index')
-                ->middleware('rbac', 'shipments.read');
-            Route::post('', 'ShipmentController/create')
-                ->middleware('rbac', 'shipments.create');
-        });
+        // Shipment routes (nested under order)
+        // NOTE: explicit method+path declarations avoid ThinkPHP dispatch ambiguity
+        // that affects POST requests inside parameterised Route::group() closures.
+        Route::get('orders/:order_id/shipments', 'ShipmentController/index')
+            ->middleware('rbac', 'shipments.read');
+        Route::post('orders/:order_id/shipments', 'ShipmentController/create')
+            ->middleware('rbac', 'shipments.create');
 
         Route::group('shipments', function () {
             Route::get('', 'ShipmentController/listAll')

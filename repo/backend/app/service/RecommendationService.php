@@ -226,15 +226,15 @@ class RecommendationService
 
         if (empty($activityIds)) {
             // Cold start: return recent orders from any activity
-            $candidates = \app\model\Order::where('state', '!=', 'canceled')
+            $candidates = \app\model\Order::where('state', '<>', 'canceled')
                 ->order('id', 'desc')
                 ->limit($limit)
                 ->select();
         } else {
             // Recommend orders from the same activities (excluding own orders)
             $candidates = \app\model\Order::whereIn('activity_id', $activityIds)
-                ->where('created_by', '!=', $userId)
-                ->where('state', '!=', 'canceled')
+                ->where('created_by', '<>', $userId)
+                ->where('state', '<>', 'canceled')
                 ->order('id', 'desc')
                 ->limit($limit * 3)
                 ->select();

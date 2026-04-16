@@ -18,7 +18,7 @@ class TaskService
     public function getTasks(int $activityId): array
     {
         $tasks = Task::where('activity_id', $activityId)->order('id', 'desc')->select();
-        return array_map(fn($t) => $this->formatTask($t), $tasks);
+        return array_map(fn($t) => $this->formatTask($t), $tasks->all());
     }
 
     /**

@@ -24,8 +24,10 @@ class ExportService
         imagestring($image, 3, 10, $height - 40, "Exported by: {$username}", $gray);
         imagestring($image, 3, 10, $height - 25, "Timestamp: {$timestamp}", $gray);
 
+        $row = 0;
         foreach ($data as $key => $value) {
-            imagestring($image, 4, 50, 50 + ($key * 20), "{$key}: {$value}", $gray);
+            imagestring($image, 4, 50, 50 + ($row * 20), "{$key}: {$value}", $gray);
+            $row++;
         }
 
         $filepath = runtime_path() . '/exports/' . $filename . '_' . $userId . '_' . time() . '.png';

@@ -10,7 +10,7 @@ class StaffingService
     public function getStaffing(int $activityId): array
     {
         $staffing = Staffing::where('activity_id', $activityId)->select();
-        return array_map(fn($s) => $this->format($s), $staffing);
+        return array_map(fn($s) => $this->format($s), $staffing->all());
     }
 
     public function createStaffing(int $activityId, array $data, $currentUser): array

@@ -21,7 +21,7 @@ class NotificationService
             ->count();
 
         return [
-            'list' => array_map(fn($n) => $this->format($n), $notifications),
+            'list' => array_map(fn($n) => $this->format($n), $notifications->all()),
             'total' => $total,
             'unread_count' => $unreadCount,
             'page' => $page,
@@ -87,7 +87,7 @@ class NotificationService
             'activity_alerts' => (bool) $prefs->activity_alerts,
             'order_alerts' => (bool) $prefs->order_alerts,
             'violation_alerts' => (bool) $prefs->violation_alerts,
-            'dashboard_layout' => json_decode($prefs->dashboard_layout, true),
+            'dashboard_layout' => $prefs->dashboard_layout !== null ? json_decode($prefs->dashboard_layout, true) : null,
         ];
     }
 

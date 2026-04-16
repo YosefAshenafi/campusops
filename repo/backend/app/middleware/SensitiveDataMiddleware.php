@@ -90,7 +90,9 @@ class SensitiveDataMiddleware
 
     protected function detectEntityType(Request $request): string
     {
-        $path = $request->path();
+        // Use pathinfo() instead of path() — path() calls config() internally which
+        // is not available on all Request instances (e.g. in the test context).
+        $path = $request->pathinfo();
         if (strpos($path, 'users') !== false) return 'user';
         if (strpos($path, 'orders') !== false) return 'order';
         return '';

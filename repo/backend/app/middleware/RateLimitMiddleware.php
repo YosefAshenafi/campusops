@@ -12,6 +12,11 @@ class RateLimitMiddleware
 
     public function handle(Request $request, \Closure $next): Response
     {
+        // Allow tests to bypass rate limiting via environment variable.
+        if (getenv('RATE_LIMIT_BYPASS') === '1') {
+            return $next($request);
+        }
+
         $ip = $request->ip();
         $window = date('YmdHi');
         $key = md5($ip . ':' . $window);

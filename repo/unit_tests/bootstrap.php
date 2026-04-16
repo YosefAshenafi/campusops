@@ -6,8 +6,39 @@ define('ROOT_PATH', dirname(__DIR__) . '/backend/');
 
 require ROOT_PATH . 'vendor/autoload.php';
 
+// Autoload test-suite base classes so subclasses can be loaded by PHPUnit
+// in any file order (alphabetically EndpointXxx < HttpTestCase).
+spl_autoload_register(function (string $class): void {
+    $testRoot = dirname(__DIR__);
+    $prefixMap = [
+        'tests\\api\\'      => $testRoot . '/API_tests/',
+        'tests\\services\\' => $testRoot . '/unit_tests/services/',
+        'tests\\'           => $testRoot . '/unit_tests/',
+    ];
+    foreach ($prefixMap as $prefix => $dir) {
+        if (str_starts_with($class, $prefix)) {
+            $rel  = substr($class, strlen($prefix));
+            $file = $dir . str_replace('\\', '/', $rel) . '.php';
+            if (is_file($file)) {
+                require_once $file;
+            }
+            return;
+        }
+    }
+});
+
+// Disable rate limiting so HTTP endpoint tests don't exhaust the per-minute quota.
+putenv('RATE_LIMIT_BYPASS=1');
+
+// Prevent ThinkPHP's MultiApp middleware from treating "phpunit" as the app name.
+// MultiApp reads SCRIPT_FILENAME to detect the entry point; "index" is in its whitelist
+// of standard web entry points, which causes it to fall back to URL-based detection and
+// ultimately skip multi-app mode entirely (since the backend has no per-app subdirectory).
+$_SERVER['SCRIPT_FILENAME'] = 'index.php';
+
 $app = new \think\App(ROOT_PATH);
 $app->initialize();
+$app->debug(true);
 
 // Use SQLite in-memory for tests — no external database required.
 $app->config->set([
@@ -193,7 +224,9 @@ $tables = [
         type TEXT NOT NULL DEFAULT '',
         title TEXT NOT NULL DEFAULT '',
         body TEXT DEFAULT '',
-        is_read INTEGER NOT NULL DEFAULT 0,
+        entity_type TEXT NOT NULL DEFAULT '',
+        entity_id INTEGER NOT NULL DEFAULT 0,
+        read_at TEXT DEFAULT NULL,
         created_at TEXT DEFAULT NULL,
         updated_at TEXT DEFAULT NULL
     )",
@@ -342,9 +375,31 @@ foreach ($tables as $sql) {
 }
 
 // Seed RBAC roles for permission checks.
-\think\facade\Db::execute("INSERT INTO roles (name, permissions) VALUES ('administrator', ?)", [json_encode(['users.*', 'orders.*', 'activities.*', 'violations.*', 'reports.*'])]);
-\think\facade\Db::execute("INSERT INTO roles (name, permissions) VALUES ('operations_staff', ?)", [json_encode(['orders.read', 'orders.update', 'activities.read'])]);
-\think\facade\Db::execute("INSERT INTO roles (name, permissions) VALUES ('reviewer', ?)", [json_encode(['orders.read', 'activities.read', 'violations.read'])]);
-\think\facade\Db::execute("INSERT INTO roles (name, permissions) VALUES ('team_lead', ?)", [json_encode(['orders.read', 'orders.create', 'activities.read'])]);
-\think\facade\Db::execute("INSERT INTO roles (name, permissions) VALUES ('regular_user', ?)", [json_encode(['orders.read', 'orders.create'])]);
-\think\facade\Db::execute("INSERT INTO roles (name, permissions) VALUES ('faculty', ?)", [json_encode(['activities.read'])]);
+\think\facade\Db::execute("INSERT INTO roles (name, permissions) VALUES ('administrator', ?)", [json_encode([
+    'users.*', 'orders.*', 'activities.*', 'violations.*', 'reports.*',
+    'shipments.*', 'tasks.*', 'checklists.*', 'staffing.*',
+    'notifications.*', 'preferences.*', 'dashboard.*', 'search.*',
+    'index.*', 'uploads.*', 'files.*', 'audit.*', 'export.*',
+])]);
+\think\facade\Db::execute("INSERT INTO roles (name, permissions) VALUES ('operations_staff', ?)", [json_encode([
+    'orders.read', 'orders.update', 'orders.ticketing', 'orders.deliver',
+    'activities.read', 'shipments.*', 'tasks.read', 'tasks.update',
+    'staffing.read', 'notifications.read', 'search.read',
+])]);
+\think\facade\Db::execute("INSERT INTO roles (name, permissions) VALUES ('reviewer', ?)", [json_encode([
+    'orders.read', 'activities.read', 'violations.read', 'violations.review',
+    'shipments.read', 'audit.read', 'search.read', 'notifications.read',
+    'dashboard.read', 'export.*',
+])]);
+\think\facade\Db::execute("INSERT INTO roles (name, permissions) VALUES ('team_lead', ?)", [json_encode([
+    'orders.read', 'orders.create', 'orders.update', 'orders.payment', 'orders.cancel',
+    'activities.read', 'activities.create', 'activities.update', 'activities.publish',
+    'activities.transition', 'activities.signup',
+    'tasks.*', 'checklists.*', 'staffing.*',
+    'shipments.read', 'notifications.read', 'search.read', 'dashboard.read',
+])]);
+\think\facade\Db::execute("INSERT INTO roles (name, permissions) VALUES ('regular_user', ?)", [json_encode([
+    'orders.read', 'orders.create', 'activities.read', 'activities.signup',
+    'notifications.read', 'preferences.*', 'search.read', 'dashboard.read', 'recommendations.*',
+])]);
+\think\facade\Db::execute("INSERT INTO roles (name, permissions) VALUES ('faculty', ?)", [json_encode(['activities.read', 'search.read'])]);
