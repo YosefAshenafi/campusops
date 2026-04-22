@@ -227,7 +227,7 @@ if (in_array($currentVersion->state, [self::STATE_PUBLISHED, self::STATE_IN_PROG
 
 **Original finding**: `backend/tests/AuthTest.php` contained 4 simplistic assertions not tied to application behavior (e.g., checking `in_array` on a hardcoded array, asserting `strlen` of a random token).
 
-**Fix applied**: Rewrote `backend/tests/AuthTest.php` with 9 behavior-driven test methods:
+**Fix applied**: Rewrote `backend/tests/AuthTest.php` with 10 behavior-driven test methods:
 
 | Test | What it verifies |
 |---|---|
@@ -243,7 +243,7 @@ if (in_array($currentVersion->state, [self::STATE_PUBLISHED, self::STATE_IN_PROG
 | `testFailedAttemptCounterBehavior` | Counter increments and resets on successful login |
 
 **Verification**:
-- `backend/tests/AuthTest.php:1-148` — All 9 tests are structurally tied to auth business logic (lockout, password verification, session tokens, account status).
+- `backend/tests/AuthTest.php:1-148` — All 10 tests are structurally tied to auth business logic (lockout, password verification, session tokens, account status).
 - Test suite reports 182 tests, 313 assertions, 0 failures — all new tests pass.
 
 **Conclusion**: **Pass**. Legacy test file replaced with behavior-driven assertions providing meaningful assurance.
@@ -307,7 +307,7 @@ if (in_array($currentVersion->state, [self::STATE_PUBLISHED, self::STATE_IN_PROG
 | Paid-order cancel bypass | Insufficient (no test blocking cancel on paid) | `testCancelThrowsWhenOrderIsPaid`, `testCancelThrowsWhenOrderIsPaidEvenForAdmin`, `testCancelSucceedsForPendingPaymentOrder` | **Sufficient** |
 | Create-time object auth | Missing | `testCreateChecklistSucceedsForActivityOwner`, `testCreateChecklistSucceedsForAdmin`, `testCreateChecklistThrows403ForNonOwner` | **Sufficient** |
 | Archived activity versioning | Missing | `testUpdateArchivedActivityCreatesNewVersion` | **Sufficient** |
-| Legacy auth test quality | Low assurance | 9 behavior-driven tests replacing 4 trivial ones | **Sufficient** |
+| Legacy auth test quality | Low assurance | 10 behavior-driven tests replacing 4 trivial ones | **Sufficient** |
 
 ### 4.3 Remaining test gaps (not regressions)
 These items were noted in the original audit as missing but are not tied to the fixed issues. They remain as improvement opportunities but do not block a Pass verdict:

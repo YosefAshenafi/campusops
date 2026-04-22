@@ -32,6 +32,11 @@ services:
     volumes:
       - ./backend:/var/www/backend
       - ./docker/php/php.ini:/usr/local/etc/php/conf.d/custom.ini:ro
+      - ./phpunit.xml:/var/www/phpunit.xml:ro
+      - ./unit_tests:/var/www/unit_tests
+      - ./API_tests:/var/www/API_tests
+      - ./e2e_tests:/var/www/e2e_tests
+      - ./test-results:/var/www/test-results
     environment:
       - DB_HOST=${DB_HOST:-mysql}
       - DB_PORT=${DB_PORT:-3306}

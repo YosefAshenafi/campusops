@@ -11,7 +11,7 @@
 
 ### Fix 1 — SQL Injection in Search (High) ✅ Pass
 
-**File:** `repo/backend/app/service/SearchService.php:80-81`
+**File:** `repo/backend/app/service/SearchService.php:78-79`
 
 **Before:**
 ```php
@@ -20,11 +20,11 @@ $queryBuilder->orderRaw("CASE WHEN title LIKE '%{$query}%' THEN 0 ELSE 1 END ASC
 
 **After (confirmed in file):**
 ```php
-$safeQuery = addslashes(str_replace(['%', '_'], ['\%', '\_'], $query));
-$queryBuilder->orderRaw("CASE WHEN title LIKE '%{$safeQuery}%' THEN 0 ELSE 1 END ASC, updated_at DESC");
+$likeParam = '%' . $query . '%';
+$queryBuilder->orderRaw("CASE WHEN title LIKE ? THEN 0 ELSE 1 END ASC, updated_at DESC", [$likeParam]);
 ```
 
-**Verification:** Raw `$query` is no longer embedded. Wildcards `%` and `_` are escaped before LIKE embedding; single quotes are escaped by `addslashes()`. The injection vector is closed.
+**Verification:** Raw `$query` is no longer embedded in the SQL string. The `orderRaw` call now uses a `?` placeholder with the LIKE pattern passed as a bound parameter, so quotes, wildcards, and any user-controlled characters are treated as data by the driver rather than being interpolated. The injection vector is closed at the database driver layer.
 
 ---
 
@@ -140,11 +140,11 @@ $orderService->cancelBySystem($order->id, 'Auto-cancelled: payment not received 
 
 ### Fix 8 — README .env Path (Low) ✅ Pass
 
-**File:** `repo/README.md:115`
+**File:** `repo/README.md:117`
 
 **Confirmed:**
 ```
-Environment: `backend/.env` (copy from `.env.example` in the repo root)
+**Environment:** `backend/.env` (copy from `.env.example` in the repo root). Override DB credentials, cache driver, and upload paths there. Container reads this file on boot.
 ```
 
 **Verification:** Ambiguity removed. The example file lives at `repo/.env.example`; the instruction now points there explicitly.
@@ -153,11 +153,11 @@ Environment: `backend/.env` (copy from `.env.example` in the repo root)
 
 ### Fix 9 — README Says "CSV" (Medium) ✅ Pass
 
-**File:** `repo/README.md:108`
+**File:** `repo/README.md:115`
 
 **Confirmed:**
 ```
-**Export:** PNG, PDF, XLSX with watermarks
+**Export:** PNG, PDF, XLSX with watermarks (username + timestamp applied by `ExportService`).
 ```
 
 **Verification:** Matches `ExportService` which produces PNG, PDF, and XLSX. CSV was never implemented.
@@ -166,7 +166,7 @@ Environment: `backend/.env` (copy from `.env.example` in the repo root)
 
 ### Fix 10 — README Omits Canceled State (Low) ✅ Pass
 
-**File:** `repo/README.md:101`
+**File:** `repo/README.md:113`
 
 **Confirmed:**
 ```

@@ -108,6 +108,14 @@ A successful response contains `data.access_token`. A `401` or connection refuse
 | `root` | `root_secret` |
 | `campusops` | `campusops_secret` |
 
+## Feature reference
+
+**Order State Machine:** Placed -> Pending Payment (30-min auto-cancel) -> Paid -> Ticketing -> Ticketed -> Closed/Canceled
+
+**Export:** PNG, PDF, XLSX with watermarks (username + timestamp applied by `ExportService`).
+
+**Environment:** `backend/.env` (copy from `.env.example` in the repo root). Override DB credentials, cache driver, and upload paths there. Container reads this file on boot.
+
 ## Tests
 
 All tests run against an **SQLite in-memory database** — no running containers or external services required.
